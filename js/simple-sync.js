@@ -1,16 +1,34 @@
-// simple-sync.js - Sistema de sincronización simplificado con GitHub
+// js/simple-sync.js - Sistema de sincronización para Vercel
 class MatilacSync {
   constructor() {
-    // CONFIGURACIÓN - Cambia estos valores por los tuyos
-    this.owner = 'kjmaya';  // Tu usuario de GitHub
-    this.repo = 'matilac-data';  // Nombre del repositorio
-    this.token = 'TU_TOKEN_AQUI';  // Tu Personal Access Token
+    this.config = null;
     this.fileName = 'matilac-data.json';
-    this.apiUrl = `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${this.fileName}`;
-    
     this.isOnline = navigator.onLine;
+    
     this.setupEventListeners();
-    this.initializeData();
+    this.initializeConfig();
+  }
+
+  // Inicializar configuración desde la API
+  async initializeConfig() {
+    try {
+      // Obtener configuración desde la función serverless
+      const response = await fetch('/api/config');
+      
+      if (response.ok) {
+        this.config = await response.json();
+        this.apiUrl = `https://api.github.com/repos/${this.config.owner}/${this.config.repo}/contents/${this.fileName}`;
+        
+        await this.initializeData();
+        this.showNotification("🔗 Sincronización configurada automáticamente", "success");
+      } else {
+        console.log('No se pudo obtener configuración del servidor');
+        this.showNotification("Trabajando sin sincronización automática", "info");
+      }
+    } catch (error) {
+      console.log('Error obteniendo configuración:', error);
+      this.showNotification("Trabajando offline", "info");
+    }
   }
 
   // Configurar listeners para eventos online/offline
@@ -18,36 +36,38 @@ class MatilacSync {
     window.addEventListener('online', () => {
       this.isOnline = true;
       this.showNotification("Conexión restaurada. Sincronizando...", "info");
-      this.syncToCloud();
+      if (this.config) {
+        this.uploadToGitHub();
+      }
     });
 
     window.addEventListener('offline', () => {
       this.isOnline = false;
-      this.showNotification("Sin conexión. Los datos se guardarán localmente.", "warning");
+      this.showNotification("Sin conexión. Guardando localmente.", "warning");
     });
   }
 
   // Inicializar datos al cargar la aplicación
   async initializeData() {
-    if (this.isOnline && this.token !== 'TU_TOKEN_AQUI') {
+    if (this.isOnline && this.config) {
       try {
         await this.downloadFromGitHub();
-        this.showNotification("Datos sincronizados desde la nube", "success");
+        this.showNotification("📱 Datos sincronizados desde la nube", "success");
       } catch (error) {
-        console.log("Error al sincronizar, usando datos locales:", error);
+        console.log("Error al sincronizar:", error);
         this.showNotification("Usando datos locales", "info");
       }
-    } else {
-      this.showNotification("Trabajando sin conexión", "info");
     }
   }
 
   // Descargar datos desde GitHub
   async downloadFromGitHub() {
+    if (!this.config) return;
+    
     try {
       const response = await fetch(this.apiUrl, {
         headers: {
-          'Authorization': `token ${this.token}`,
+          'Authorization': `token ${this.config.token}`,
           'Accept': 'application/vnd.github.v3+json'
         }
       });
@@ -69,6 +89,8 @@ class MatilacSync {
       } else if (response.status === 404) {
         // El archivo no existe, crear uno inicial
         await this.createInitialFile();
+      } else if (response.status === 401) {
+        this.showNotification("❌ Error de autenticación con GitHub", "error");
       } else {
         throw new Error(`Error HTTP: ${response.status}`);
       }
@@ -80,6 +102,8 @@ class MatilacSync {
 
   // Crear archivo inicial en GitHub
   async createInitialFile() {
+    if (!this.config) return;
+    
     const initialData = {
       pedidos: JSON.parse(localStorage.getItem('pedidos') || '[]'),
       costos: JSON.parse(localStorage.getItem('costos') || '{}'),
@@ -87,13 +111,13 @@ class MatilacSync {
       version: '1.0.0'
     };
 
-    const content = btoa(JSON.stringify(initialData, null, 2));
-
     try {
+      const content = btoa(JSON.stringify(initialData, null, 2));
+      
       const response = await fetch(this.apiUrl, {
         method: 'PUT',
         headers: {
-          'Authorization': `token ${this.token}`,
+          'Authorization': `token ${this.config.token}`,
           'Accept': 'application/vnd.github.v3+json',
           'Content-Type': 'application/json'
         },
@@ -106,21 +130,16 @@ class MatilacSync {
       if (response.ok) {
         const data = await response.json();
         this.sha = data.content.sha;
-        this.showNotification("Archivo inicial creado en GitHub", "success");
-      } else {
-        throw new Error('No se pudo crear el archivo inicial');
+        this.showNotification("📁 Archivo inicial creado en GitHub", "success");
       }
     } catch (error) {
       console.error('Error creating initial file:', error);
-      throw error;
     }
   }
 
   // Subir datos a GitHub
   async uploadToGitHub() {
-    if (!this.isOnline || this.token === 'TU_TOKEN_AQUI') {
-      return false;
-    }
+    if (!this.isOnline || !this.config) return false;
 
     try {
       const currentData = {
@@ -135,7 +154,7 @@ class MatilacSync {
       const response = await fetch(this.apiUrl, {
         method: 'PUT',
         headers: {
-          'Authorization': `token ${this.token}`,
+          'Authorization': `token ${this.config.token}`,
           'Accept': 'application/vnd.github.v3+json',
           'Content-Type': 'application/json'
         },
@@ -150,43 +169,50 @@ class MatilacSync {
         const data = await response.json();
         this.sha = data.content.sha;
         localStorage.setItem('lastSync', new Date().toISOString());
-        this.showNotification("✅ Datos guardados en la nube", "success");
+        this.showNotification("☁️ Datos guardados en la nube", "success");
         return true;
+      } else if (response.status === 401) {
+        this.showNotification("❌ Error de autenticación", "error");
       } else {
-        throw new Error(`Error al subir: ${response.status}`);
+        console.error('Error response:', response.status);
       }
     } catch (error) {
       console.error('Error uploading to GitHub:', error);
-      this.showNotification("Error al sincronizar. Datos guardados localmente.", "error");
-      return false;
+      this.showNotification("Error al sincronizar. Guardado localmente.", "error");
     }
+    return false;
   }
 
-  // Actualizar interfaz después de sincronizar
+  // Actualizar interfaz
   updateUI() {
     if (typeof actualizarTablas === 'function') actualizarTablas();
     if (typeof actualizarCostos === 'function') actualizarCostos();
     if (typeof actualizarInventario === 'function') actualizarInventario();
   }
 
-  // Sincronizar después de agregar un pedido
+  // Sincronizar después de agregar pedido
   async syncAfterPedido() {
-    if (this.isOnline) {
+    if (this.isOnline && this.config) {
       await this.uploadToGitHub();
     }
   }
 
-  // Sincronizar después de agregar un costo
+  // Sincronizar después de agregar costo
   async syncAfterCosto() {
-    if (this.isOnline) {
+    if (this.isOnline && this.config) {
       await this.uploadToGitHub();
     }
   }
 
   // Sincronización manual
   async manualSync() {
+    if (!this.config) {
+      this.showNotification("❌ Sincronización no configurada", "error");
+      return;
+    }
+
     if (!this.isOnline) {
-      this.showNotification("Sin conexión a internet", "error");
+      this.showNotification("❌ Sin conexión a internet", "error");
       return;
     }
 
@@ -209,23 +235,28 @@ class MatilacSync {
     }
   }
 
-  // Obtener estadísticas de sincronización
+  // Obtener estado de sincronización
   getSyncStatus() {
     const lastSync = localStorage.getItem('lastSync');
     return {
       isOnline: this.isOnline,
       lastSync: lastSync ? new Date(lastSync).toLocaleString('es-ES') : 'Nunca',
-      tokenConfigured: this.token !== 'TU_TOKEN_AQUI'
+      configured: !!this.config
     };
+  }
+
+  // Obtener información de configuración
+  getConfigInfo() {
+    if (!this.config) return 'No configurado';
+    return `${this.config.owner}/${this.config.repo}`;
   }
 }
 
-// Instancia global
+// Variables globales
 let matilacSync = null;
 
-// Modificar las funciones existentes para incluir sincronización
+// Modificar funciones existentes para incluir sincronización
 function setupSyncHooks() {
-  // Hook para agregar pedido
   const originalAgregarPedido = window.agregarPedido;
   if (originalAgregarPedido) {
     window.agregarPedido = async function() {
@@ -237,7 +268,6 @@ function setupSyncHooks() {
     };
   }
 
-  // Hook para agregar costo
   const originalAgregarCosto = window.agregarCosto;
   if (originalAgregarCosto) {
     window.agregarCosto = async function() {
@@ -250,7 +280,7 @@ function setupSyncHooks() {
   }
 }
 
-// Agregar botón de sincronización al header
+// Agregar botón de sincronización
 function addSyncButton() {
   const header = document.querySelector('header .flex.items-center.gap-4');
   if (header && !document.getElementById('sync-button')) {
@@ -259,16 +289,11 @@ function addSyncButton() {
     syncButton.innerHTML = '<i class="fas fa-cloud-upload-alt"></i>';
     syncButton.className = 'p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm';
     syncButton.title = 'Sincronizar con la nube';
-    syncButton.onclick = () => {
-      if (matilacSync) {
-        matilacSync.manualSync();
-      }
-    };
+    syncButton.onclick = () => matilacSync?.manualSync();
     
-    // Agregar indicador de estado
     const statusDiv = document.createElement('div');
     statusDiv.id = 'sync-status';
-    statusDiv.className = 'text-xs text-gray-500';
+    statusDiv.className = 'text-xs text-gray-500 text-center';
     
     const container = document.createElement('div');
     container.className = 'flex flex-col items-center gap-1';
@@ -277,12 +302,11 @@ function addSyncButton() {
     
     header.insertBefore(container, header.lastElementChild);
     
-    // Actualizar estado cada 5 segundos
     setInterval(updateSyncStatus, 5000);
   }
 }
 
-// Actualizar indicador de estado
+// Actualizar estado de sincronización
 function updateSyncStatus() {
   const statusDiv = document.getElementById('sync-status');
   const syncButton = document.getElementById('sync-button');
@@ -290,30 +314,31 @@ function updateSyncStatus() {
   if (matilacSync && statusDiv && syncButton) {
     const status = matilacSync.getSyncStatus();
     
-    if (!status.tokenConfigured) {
-      statusDiv.textContent = 'Config.';
-      syncButton.className = syncButton.className.replace('bg-blue-500', 'bg-gray-500');
+    if (!status.configured) {
+      statusDiv.textContent = 'Local';
+      syncButton.className = syncButton.className.replace(/bg-\w+-500/g, 'bg-gray-500');
     } else if (status.isOnline) {
-      statusDiv.textContent = 'Online';
-      syncButton.className = syncButton.className.replace('bg-gray-500', 'bg-blue-500');
+      statusDiv.textContent = 'Cloud';
+      syncButton.className = syncButton.className.replace(/bg-\w+-500/g, 'bg-green-500');
     } else {
       statusDiv.textContent = 'Offline';
-      syncButton.className = syncButton.className.replace('bg-blue-500', 'bg-gray-500');
+      syncButton.className = syncButton.className.replace(/bg-\w+-500/g, 'bg-orange-500');
     }
   }
 }
 
-// Inicializar el sistema de sincronización
+// Inicializar sistema de sincronización
 function initializeMatilacSync() {
-  matilacSync = new MatilacSync();
-  setupSyncHooks();
-  addSyncButton();
-  updateSyncStatus();
-  
-  // Mostrar información de configuración en consola
-  console.log('🔗 Matilac Sync inicializado');
-  console.log('📁 Para configurar, edita el archivo simple-sync.js');
-  console.log('🔑 Token configurado:', matilacSync.token !== 'TU_TOKEN_AQUI');
+  try {
+    matilacSync = new MatilacSync();
+    setupSyncHooks();
+    addSyncButton();
+    updateSyncStatus();
+    
+    console.log('🔗 Matilac Sync inicializado con Vercel');
+  } catch (error) {
+    console.error('Error inicializando sync:', error);
+  }
 }
 
 // Inicializar cuando el DOM esté listo
