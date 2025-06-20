@@ -41,6 +41,15 @@ function agregarPedido() {
     detalle += ` ${tipo}`;
   }
 
+  if (producto === "Arepas") {
+    const tipo = document.getElementById("tipoArepas").value;
+    if (!tipo) {
+      mostrarNotificacion("Selecciona tipo de arepa", "error");
+      return;
+    }
+    detalle += ` ${tipo}`;
+  }
+
   const pedido = { categoria, producto: detalle, cantidad, precio, fecha, cliente };
 
   const pedidos = JSON.parse(localStorage.getItem("pedidos") || "[]");
@@ -50,7 +59,9 @@ function agregarPedido() {
   mostrarNotificacion("Pedido agregado exitosamente", "success");
   actualizarTablas();
   limpiarCampos();
-}// Funciones para la gestión de pedidos
+}
+
+// Funciones para la gestión de pedidos
 function cargarSeccionPedidos() {
   const seccionPedidos = document.getElementById('seccion-pedidos');
   
@@ -80,6 +91,10 @@ function cargarSeccionPedidos() {
             </select>
           </div>
 
+          <!-- Contenedor para opciones dinámicas (tamaño, sabor, tipo) -->
+          <div id="opcionesEspecificas" class="hidden">
+          </div>
+
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Cantidad</label>
             <input type="number" id="cantidad" placeholder="0" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all" min="1" value="1">
@@ -100,9 +115,6 @@ function cargarSeccionPedidos() {
             <input type="text" id="cliente" placeholder="Nombre del cliente" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all">
           </div>
         </div>
-
-        <!-- Extras dinámicos -->
-        <div id="opcionesExtras" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4 hidden"></div>
 
         <button onclick="agregarPedido()" class="btn-primary mt-6">
           <i class="fas fa-plus mr-2"></i>
@@ -150,49 +162,27 @@ function configurarEventListenersPedidos() {
     const select = document.getElementById("producto");
     select.innerHTML = '<option value="">Selecciona un producto</option>' +
       productos.map(p => `<option value="${p}">${p}</option>`).join('');
-    limpiarExtras();
+    limpiarOpcionesEspecificas();
   });
 
   document.getElementById("producto").addEventListener("change", function () {
     const producto = this.value;
-    const extras = document.getElementById("opcionesExtras");
-    extras.innerHTML = "";
-    extras.classList.add("hidden");
+    const opcionesDiv = document.getElementById("opcionesEspecificas");
+    opcionesDiv.innerHTML = "";
+    opcionesDiv.classList.add("hidden");
     document.getElementById("precio").value = "";
 
     if (producto === "Yogurt") {
-      extras.classList.remove("hidden");
-      extras.innerHTML = `
-        <select id="tamañoYogurt" class="border rounded px-3 py-2" onchange="actualizarPrecioYogurt()">
-          <option value="">Selecciona tamaño</option>
-          <option value="1L">1 Litro - $10000</option>
-          <option value="2L">2 Litros - $18000</option>
-        </select>
-        <select id="saborYogurt" class="border rounded px-3 py-2">
-          <option value="">Selecciona sabor</option>
-          ${yogurtSabores.map(s => `<option value="${s}">${s}</option>`).join('')}
-        </select>
-      `;
+      mostrarOpcionesYogurt();
     }
     else if (producto === "Queso") {
-      extras.classList.remove("hidden");
-      extras.innerHTML = `
-        <select id="tipoQueso" class="border rounded px-3 py-2" onchange="setPrecioUnitario(${PRECIOS.queso})">
-          <option value="">Selecciona tipo de queso</option>
-          ${tiposQueso.map(t => `<option value="${t}">${t}</option>`).join('')}
-        </select>
-      `;
-      setPrecioUnitario(PRECIOS.queso);
+      mostrarOpcionesQueso();
     }
     else if (producto === "Envueltos") {
-      extras.classList.remove("hidden");
-      extras.innerHTML = `
-        <select id="tipoEnvueltos" class="border rounded px-3 py-2" onchange="actualizarPrecioEnvueltos()">
-          <option value="">Selecciona tipo</option>
-          <option value="Normal">Normal - $2000</option>
-          <option value="Especial">Especial - $3500</option>
-        </select>
-      `;
+      mostrarOpcionesEnvueltos();
+    }
+    else if (producto === "Arepas") {
+      mostrarOpcionesArepas();
     }
     else if (producto === "Rellenas") {
       setPrecioUnitario(PRECIOS.rellenas);
@@ -200,51 +190,168 @@ function configurarEventListenersPedidos() {
     else if (producto === "Panela") {
       setPrecioUnitario(PRECIOS.panela);
     }
+    else if (producto === "Huevos") {
+      setPrecioUnitario(PRECIOS.huevos);
+    }
+    else if (producto === "Longaniza") {
+      setPrecioUnitario(PRECIOS.longaniza);
+    }
+    else if (producto === "Almojábanas") {
+      setPrecioUnitario(PRECIOS.almohabanas);
+    }
+    else if (producto === "Pulpa de avena") {
+      // Agregar precio si lo tienes definido en PRECIOS
+      // setPrecioUnitario(PRECIOS.pulpaAvena);
+    }
   });
 
   document.getElementById("cantidad").addEventListener("input", actualizarTotal);
 }
 
-function agregarPedido() {
-  const categoria = document.getElementById("categoria").value;
-  const producto = document.getElementById("producto").value;
-  const cantidad = parseInt(document.getElementById("cantidad").value);
-  const precio = parseInt(document.getElementById("precio").value);
-  const fecha = document.getElementById("fecha").value;
-  const cliente = document.getElementById("cliente").value;
+function mostrarOpcionesYogurt() {
+  const opcionesDiv = document.getElementById("opcionesEspecificas");
+  opcionesDiv.classList.remove("hidden");
+  opcionesDiv.innerHTML = `
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Tamaño</label>
+      <select id="tamañoYogurt" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all" onchange="actualizarPrecioYogurt()">
+        <option value="">Selecciona tamaño</option>
+        <option value="1L">1 Litro - $10,000</option>
+        <option value="2L">2 Litros - $18,000</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Sabor</label>
+      <select id="saborYogurt" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all">
+        <option value="">Selecciona sabor</option>
+        ${yogurtSabores.map(s => `<option value="${s}">${s}</option>`).join('')}
+      </select>
+    </div>
+  `;
+}
 
-  if (!categoria || !producto || !cantidad || !precio || !fecha || !cliente) {
-    return alert("Completa todos los campos");
+function mostrarOpcionesQueso() {
+  const opcionesDiv = document.getElementById("opcionesEspecificas");
+  opcionesDiv.classList.remove("hidden");
+  opcionesDiv.innerHTML = `
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Queso</label>
+      <select id="tipoQueso" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all" onchange="setPrecioUnitario(${PRECIOS.queso})">
+        <option value="">Selecciona tipo</option>
+        ${tiposQueso.map(t => `<option value="${t}">${t}</option>`).join('')}
+      </select>
+    </div>
+  `;
+}
+
+function mostrarOpcionesEnvueltos() {
+  const opcionesDiv = document.getElementById("opcionesEspecificas");
+  opcionesDiv.classList.remove("hidden");
+  opcionesDiv.innerHTML = `
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Envuelto</label>
+      <select id="tipoEnvueltos" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all" onchange="actualizarPrecioEnvueltos()">
+        <option value="">Selecciona tipo</option>
+        <option value="Normal">Normal - $2,000</option>
+        <option value="Especial">Especial - $3,500</option>
+      </select>
+    </div>
+  `;
+}
+
+function mostrarOpcionesArepas() {
+  const opcionesDiv = document.getElementById("opcionesEspecificas");
+  opcionesDiv.classList.remove("hidden");
+  opcionesDiv.innerHTML = `
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Arepa</label>
+      <select id="tipoArepas" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all" onchange="actualizarPrecioArepas()">
+        <option value="">Selecciona tipo</option>
+        <option value="Boyacense">Boyacense - $4,000</option>
+        <option value="de Chocolo">de Chocolo - $5,000</option>
+      </select>
+    </div>
+  `;
+}
+
+// Función para establecer precio unitario y calcular total
+function setPrecioUnitario(precioUnitario) {
+  const cantidad = parseInt(document.getElementById("cantidad").value) || 1;
+  const total = precioUnitario * cantidad;
+  document.getElementById("precio").value = total;
+}
+
+// Función para actualizar precio del yogurt
+function actualizarPrecioYogurt() {
+  const tamaño = document.getElementById("tamañoYogurt").value;
+  if (tamaño) {
+    const precio = PRECIOS.yogurt[tamaño];
+    setPrecioUnitario(precio);
   }
+}
 
-  let detalle = producto;
+// Función para actualizar precio de envueltos
+function actualizarPrecioEnvueltos() {
+  const tipo = document.getElementById("tipoEnvueltos").value;
+  if (tipo) {
+    const precio = PRECIOS.envueltos[tipo];
+    setPrecioUnitario(precio);
+  }
+}
+
+// Función para actualizar precio de arepas
+function actualizarPrecioArepas() {
+  const tipo = document.getElementById("tipoArepas").value;
+  if (tipo) {
+    const precio = PRECIOS.arepas[tipo];
+    setPrecioUnitario(precio);
+  }
+}
+
+// Función para actualizar total cuando cambia la cantidad
+function actualizarTotal() {
+  const producto = document.getElementById("producto").value;
+  const cantidad = parseInt(document.getElementById("cantidad").value) || 1;
 
   if (producto === "Yogurt") {
     const tamaño = document.getElementById("tamañoYogurt").value;
-    const sabor = document.getElementById("saborYogurt").value;
-    if (!tamaño || !sabor) return alert("Selecciona tamaño y sabor del yogurt");
-    detalle += ` ${tamaño} de ${sabor}`;
-  }
-
-  if (producto === "Queso") {
-    const tipo = document.getElementById("tipoQueso").value;
-    if (!tipo) return alert("Selecciona tipo de queso");
-    detalle += ` ${tipo}`;
-  }
-
-  if (producto === "Envueltos") {
+    if (tamaño) {
+      const precio = PRECIOS.yogurt[tamaño];
+      document.getElementById("precio").value = precio * cantidad;
+    }
+  } 
+  else if (producto === "Envueltos") {
     const tipo = document.getElementById("tipoEnvueltos").value;
-    if (!tipo) return alert("Selecciona tipo de envuelto");
-    detalle += ` ${tipo}`;
+    if (tipo) {
+      const precio = PRECIOS.envueltos[tipo];
+      document.getElementById("precio").value = precio * cantidad;
+    }
   }
-
-  const pedido = { categoria, producto: detalle, cantidad, precio, fecha, cliente };
-
-  const pedidos = JSON.parse(localStorage.getItem("pedidos") || "[]");
-  pedidos.push(pedido);
-  localStorage.setItem("pedidos", JSON.stringify(pedidos));
-  actualizarTablas();
-  limpiarCampos();
+  else if (producto === "Arepas") {
+    const tipo = document.getElementById("tipoArepas").value;
+    if (tipo) {
+      const precio = PRECIOS.arepas[tipo];
+      document.getElementById("precio").value = precio * cantidad;
+    }
+  }
+  else if (producto === "Queso") {
+    document.getElementById("precio").value = PRECIOS.queso * cantidad;
+  }
+  else if (producto === "Huevos") {
+    document.getElementById("precio").value = PRECIOS.huevos * cantidad;
+  } 
+  else if (producto === "Longaniza") {
+    document.getElementById("precio").value = PRECIOS.longaniza * cantidad;
+  } 
+  else if (producto === "Almojábanas") {
+    document.getElementById("precio").value = PRECIOS.almohabanas * cantidad;
+  } 
+  else if (producto === "Rellenas") {
+    document.getElementById("precio").value = PRECIOS.rellenas * cantidad;
+  }
+  else if (producto === "Panela") {
+    document.getElementById("precio").value = PRECIOS.panela * cantidad;
+  }
 }
 
 function eliminarPedido(index) {
@@ -319,5 +426,13 @@ function limpiarCampos() {
   document.getElementById("precio").value = "";
   document.getElementById("fecha").value = "";
   document.getElementById("cliente").value = "";
-  limpiarExtras();
+  limpiarOpcionesEspecificas();
+}
+
+function limpiarOpcionesEspecificas() {
+  const opcionesDiv = document.getElementById("opcionesEspecificas");
+  if (opcionesDiv) {
+    opcionesDiv.innerHTML = "";
+    opcionesDiv.classList.add("hidden");
+  }
 }

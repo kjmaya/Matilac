@@ -1,12 +1,13 @@
 // Configuración de productos y categorías
 const productosPorCategoria = {
   "Lácteos": ["Yogurt", "Pulpa de avena", "Queso"],
-  "Panadería": ["Envueltos", "Almojábanas", "Arepas Boyacenses o Cholo"],
-  "Otros": ["Rellenas", "Panela"]
+  "Panadería": ["Envueltos", "Almojábanas", "Arepas"],
+  "Otros": ["Rellenas", "Panela", "Huevos", "Longaniza"]
 };
 
 const yogurtSabores = ["Durazno", "Fresa", "Mora", "Guanábana", "Feijoa"];
 const tiposQueso = ["Campesino", "Doble Crema", "Pera"];
+const tiposArepas = ["Boyacense", "de Chocolo"];
 
 // Precios base
 const PRECIOS = {
@@ -15,12 +16,19 @@ const PRECIOS = {
     "2L": 18000
   },
   queso: 13000,
+  almohabanas: 2500,
   envueltos: {
     "Normal": 2000,
     "Especial": 3500
   },
+  arepas: {
+    "Boyacense": 4000,
+    "de Chocolo": 5000
+  },
   rellenas: 2500,
-  panela: 30000
+  panela: 30000,
+  longaniza: 7000,
+  huevos: 15000
 };
 
 // Información de productos para la página de inicio
@@ -36,14 +44,29 @@ const PRODUCTOS_INFO = [
     imagen: "https://www.elespectador.com/resizer/v2/MMSF4T4WD5HFLIZBHYYDXIBWZQ.jpg?auth=364bf9108ea2fcbc7b9562a38d8ca6e803b48a0943b1ce5cb5ce398bcaba3d9b&width=1110&height=739&smart=true&quality=60"
   },
   {
+    nombre: "Arepas de chocolo",
+    descripcion: "Hechas a mano con maíz 100% natural y con delicioso queso.",
+    imagen: "https://i.ytimg.com/vi/JLzbNGR8Sh4/sddefault.jpg"
+  },
+  {
     nombre: "Envueltos",
     descripcion: "Tradicionales, suaves y llenos de sabor.",
     imagen: "https://www.semana.com/resizer/v2/47UQRRUPLBDZLGU73EX3HAWWGU.jpg?auth=f37d6a8c97bb914dccede5c919a7ee48406dfe3a2685a99d2b00a62c16a91531&smart=true&quality=75&width=1280&fitfill=false"
   },
   {
-    nombre: "Queso",
+    nombre: "Queso campesino",
     descripcion: "Fresco, artesanal, ideal para acompañar.",
     imagen: "https://riqa.pe/wp-content/uploads/2025/01/queso-fresco-sin-sal.jpg"
+  },
+  {
+    nombre: "Queso doble crema",
+    descripcion: "Fresco, artesanal, ideal para acompañar.",
+    imagen: "https://www.lekue.com/cdn-cgi/image/format=auto,onerror=redirect/media/wysiwyg/LEKUE/lekueblogs/queso-doble-crema.jpg"
+  },
+  {
+    nombre: "Queso pera",
+    descripcion: "Fresco, artesanal, ideal para acompañar.",
+    imagen: "https://pbs.twimg.com/media/CwA0KhgWcAEr2fQ.jpg"
   },
   {
     nombre: "Almojábanas",
@@ -64,5 +87,15 @@ const PRODUCTOS_INFO = [
     nombre: "Rellenas",
     descripcion: "Arepitas rellenas de queso, suaves y doraditas.",
     imagen: "https://www.infobae.com/new-resizer/Owbs3cevi58yv_i19oFHy6ewqEA=/arc-anglerfish-arc2-prod-infobae/public/PHHWHA74SFBV3OPDVDTDQANJ7U.jpg"
+  },
+  {
+    nombre: "Longaniza",
+    descripcion: "Deliciosa longaniza fresca y artesanal.",
+    imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRofsuAcfH5EI6UmOkrjJJE5BVsfBUjJnahwxz6ZtG27QQfoKiJZyUbP5c-aHolD4nQLTw&usqp=CAU"
+  },
+  {
+    nombre: "Huevos",
+    descripcion: "Deliciosos huevos frescos de la granja a tu hogar.",
+    imagen: "https://www.cclataurina.com/wp-content/uploads/2024/05/huevos.webp"
   }
 ];
