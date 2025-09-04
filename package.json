@@ -1,0 +1,26 @@
+{
+  "name": "matilac",
+  "version": "1.0.0",
+  "description": "Sistema de gestión para productos lácteos Matilac",
+  "main": "index.html",
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'Build step'",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "pg": "^8.11.3"
+  },
+  "devDependencies": {
+    "@vercel/node": "^3.0.0"
+  },
+  "keywords": [
+    "matilac",
+    "lacteos",
+    "gestion",
+    "pedidos"
+  ],
+  "author": "Matilac",
+  "license": "MIT"
+}
