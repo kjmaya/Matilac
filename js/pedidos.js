@@ -11,7 +11,9 @@ function cargarSeccionPedidos() {
   elemento.innerHTML = `
     <div class="container mx-auto p-6">
       <!-- Header -->
-      <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center justify-bet      <p class="text-sm text-gray-600 mb-2">
+        📋 ${pedido.numero_pedido || 'N/A'}
+      </p>n mb-6">
         <div>
           <h2 class="text-2xl font-bold text-gray-800">📋 Gestión de Pedidos</h2>
           <p class="text-gray-600">Administra los pedidos de los clientes</p>
