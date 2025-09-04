@@ -1,7 +1,8 @@
-// js/auth-client.js - Cliente de autenticación para el frontend
+// js/auth-client.js - Cliente de autenticación para el frontend v2.0.0
 class AuthClient {
   constructor() {
     this.baseUrl = '/api/auth';
+    console.log('AuthClient v2.0.0 initialized with baseUrl:', this.baseUrl);
     this.token = localStorage.getItem('matilac_token');
     this.user = this.token ? JSON.parse(localStorage.getItem('matilac_user') || '{}') : null;
     this.isAuthenticated = !!this.token;

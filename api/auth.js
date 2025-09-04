@@ -1,4 +1,4 @@
-// api/auth.js - Sistema de autenticación
+// api/auth.js - Sistema de autenticación v2.0.0
 const { query, transaction } = require('./db.js');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
