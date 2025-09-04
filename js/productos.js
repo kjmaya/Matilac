@@ -32,10 +32,10 @@ async function cargarSeccionInicio() {
       productosHTML = productosData.productos.slice(0, 6).map((producto, index) => `
         <div class="card-hover bg-white rounded-xl shadow-lg overflow-hidden" style="animation-delay: ${index * 0.1}s">
           <div class="relative h-48 overflow-hidden">
-            <img src="${producto.imagen_url || 'https://via.placeholder.com/300x200?text=' + encodeURIComponent(producto.nombre)}" 
+            <img src="${producto.imagen_url || generatePlaceholderImage(producto.nombre)}" 
                  alt="${producto.nombre}" 
                  class="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
-                 onerror="this.src='https://via.placeholder.com/300x200?text=${encodeURIComponent(producto.nombre)}'">
+                 onerror="handleImageError(this, '${producto.nombre}')">
             <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
             <h3 class="absolute bottom-4 left-4 text-white font-bold text-xl">${producto.nombre}</h3>
           </div>
@@ -174,4 +174,52 @@ function limpiarExtras() {
   if (precio) {
     precio.value = "";
   }
+}
+
+// Funciones helper para imágenes placeholder
+function generatePlaceholderImage(productName) {
+  // Generar una imagen SVG placeholder usando data URI
+  const colors = [
+    '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', 
+    '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9'
+  ];
+  
+  const color = colors[Math.abs(hashCode(productName)) % colors.length];
+  const initials = productName.split(' ').map(word => word[0]).join('').toUpperCase().substring(0, 2);
+  
+  const svg = `
+    <svg width="300" height="200" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100%" height="100%" fill="${color}"/>
+      <text x="50%" y="50%" dominant-baseline="central" text-anchor="middle" 
+            font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="white">
+        ${initials}
+      </text>
+      <text x="50%" y="70%" dominant-baseline="central" text-anchor="middle" 
+            font-family="Arial, sans-serif" font-size="12" fill="white" opacity="0.8">
+        ${productName}
+      </text>
+    </svg>
+  `;
+  
+  return `data:image/svg+xml;base64,${btoa(svg)}`;
+}
+
+function handleImageError(img, productName) {
+  // Evitar loops infinitos
+  if (img.src.startsWith('data:image/svg+xml')) {
+    console.log('Imagen placeholder ya cargada para:', productName);
+    return;
+  }
+  
+  img.src = generatePlaceholderImage(productName);
+}
+
+function hashCode(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convertir a 32-bit integer
+  }
+  return hash;
 }
