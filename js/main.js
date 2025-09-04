@@ -18,10 +18,31 @@ document.addEventListener('DOMContentLoaded', async function() {
   await verificarConexionDB();
   
   // Cargar todas las secciones
-  cargarSeccionInicio();
-  cargarSeccionPedidos();
-  cargarSeccionCostos();
-  cargarSeccionInventario();
+  try {
+    cargarSeccionInicio();
+    if (typeof cargarSeccionPedidos === 'function') {
+      cargarSeccionPedidos();
+    } else {
+      console.warn('cargarSeccionPedidos no está definida, cargando sección básica');
+      cargarSeccionBasica('pedidos', '🛒 Pedidos', 'Gestión de pedidos en desarrollo...');
+    }
+    
+    if (typeof cargarSeccionCostos === 'function') {
+      cargarSeccionCostos();
+    } else {
+      console.warn('cargarSeccionCostos no está definida, cargando sección básica');
+      cargarSeccionBasica('costos', '💰 Costos', 'Gestión de costos en desarrollo...');
+    }
+    
+    if (typeof cargarSeccionInventario === 'function') {
+      cargarSeccionInventario();
+    } else {
+      console.warn('cargarSeccionInventario no está definida, cargando sección básica');
+      cargarSeccionBasica('inventario', '📦 Inventario', 'Gestión de inventario en desarrollo...');
+    }
+  } catch (error) {
+    console.error('Error cargando secciones:', error);
+  }
   
   // Mostrar sección inicial
   mostrarSeccion('inicio');
@@ -109,6 +130,25 @@ async function verificarConexionDB() {
   } catch (error) {
     console.error('❌ Error verificando conexión:', error);
     mostrarNotificacion('Error de conexión', 'error');
+  }
+}
+
+// Función helper para cargar secciones básicas
+function cargarSeccionBasica(seccion, titulo, mensaje) {
+  const elemento = document.getElementById('seccion-' + seccion);
+  if (elemento) {
+    elemento.innerHTML = `
+      <div class="container mx-auto p-6">
+        <div class="bg-white rounded-lg shadow-lg p-8 text-center">
+          <h2 class="text-2xl font-bold text-gray-800 mb-4">${titulo}</h2>
+          <p class="text-gray-600 mb-6">${mensaje}</p>
+          <div class="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-800 rounded-lg">
+            <i class="fas fa-info-circle mr-2"></i>
+            Funcionalidad en desarrollo
+          </div>
+        </div>
+      </div>
+    `;
   }
 }
 

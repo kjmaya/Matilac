@@ -4,12 +4,19 @@ function mostrarSeccion(id) {
   document.querySelectorAll(".seccion").forEach(s => s.style.display = "none");
   
   // Mostrar la sección seleccionada con animación
-  const seccion = document.getElementById(id);
-  seccion.style.display = "block";
+  const seccion = document.getElementById('seccion-' + id);
+  if (seccion) {
+    seccion.style.display = "block";
+  } else {
+    console.error('Sección no encontrada:', 'seccion-' + id);
+  }
   
   // Actualizar estilo del menú activo
   document.querySelectorAll(".nav-item").forEach(btn => btn.classList.remove("activo"));
-  document.getElementById("btn-" + id).classList.add("activo");
+  const btnActivo = document.getElementById("btn-" + id);
+  if (btnActivo) {
+    btnActivo.classList.add("activo");
+  }
   
   // Actualizar título de la sección
   const titulos = {
