@@ -20,9 +20,14 @@ class DatabaseClient {
 
   async request(endpoint, options = {}) {
     const url = `${this.baseUrl}${endpoint}`;
+    
+    // Agregar headers de autenticación si están disponibles
+    const authHeaders = typeof authClient !== 'undefined' ? authClient.getAuthHeaders() : {};
+    
     const config = {
       headers: {
         'Content-Type': 'application/json',
+        ...authHeaders,
         ...options.headers
       },
       ...options
@@ -37,6 +42,14 @@ class DatabaseClient {
       const data = await response.json();
 
       if (!response.ok) {
+        // Si hay error 401, puede ser token expirado
+        if (response.status === 401 && typeof authClient !== 'undefined') {
+          console.log('Token expirado, redirigiendo a login...');
+          await authClient.logout();
+          window.location.href = 'login.html';
+          return;
+        }
+        
         throw new Error(data.error || `HTTP ${response.status}`);
       }
 

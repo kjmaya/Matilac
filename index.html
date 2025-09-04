@@ -76,8 +76,39 @@
         <h2 class="text-2xl font-semibold text-gray-800" id="section-title">Inicio</h2>
         <div class="flex items-center gap-4">
           <span class="text-sm text-gray-500" id="current-date"></span>
-          <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-            <i class="fas fa-user text-gray-600"></i>
+          
+          <!-- User info and logout -->
+          <div class="flex items-center gap-3">
+            <div class="text-right">
+              <p class="text-sm font-medium text-gray-800" id="user-name">Cargando...</p>
+              <p class="text-xs text-gray-500" id="user-role">Usuario</p>
+            </div>
+            <div class="relative">
+              <button 
+                id="userMenuBtn"
+                class="w-10 h-10 bg-gradient-to-br from-pink-500 to-rose-600 rounded-full flex items-center justify-center text-white font-medium hover:shadow-lg transition-all duration-200"
+              >
+                <i class="fas fa-user text-sm"></i>
+              </button>
+              
+              <!-- Dropdown menu -->
+              <div id="userMenu" class="absolute right-0 top-12 w-48 bg-white rounded-lg shadow-lg border border-gray-100 hidden z-50">
+                <div class="p-3 border-b border-gray-100">
+                  <p class="text-sm font-medium text-gray-800" id="menu-user-name">Usuario</p>
+                  <p class="text-xs text-gray-500" id="menu-user-role">Rol</p>
+                </div>
+                <div class="p-2">
+                  <button 
+                    id="logoutBtn"
+                    class="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md flex items-center gap-2"
+                  >
+                    <i class="fas fa-sign-out-alt"></i>
+                    Cerrar Sesión
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
           </div>
         </div>
       </div>
@@ -98,6 +129,7 @@
 
   <!-- Scripts -->
   <script src="js/config.js"></script>
+  <script src="js/auth-client.js"></script>
   <script src="js/database-client.js"></script>
   <script src="js/navigation.js"></script>
   <script src="js/productos.js"></script>
