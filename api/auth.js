@@ -18,20 +18,22 @@ module.exports = async function handler(req, res) {
   }
 
   try {
+    const { pathname } = new URL(req.url, `http://${req.headers.host}`);
+    
     switch (req.method) {
       case 'POST':
-        if (req.url.endsWith('/login')) {
+        if (pathname.endsWith('/login') || pathname.endsWith('/auth')) {
           await handleLogin(req, res);
-        } else if (req.url.endsWith('/logout')) {
+        } else if (pathname.endsWith('/logout')) {
           await handleLogout(req, res);
-        } else if (req.url.endsWith('/verify')) {
+        } else if (pathname.endsWith('/verify')) {
           await handleVerifyToken(req, res);
         } else {
-          res.status(404).json({ error: 'Endpoint not found' });
+          await handleLogin(req, res); // Default para /api/auth
         }
         break;
       case 'GET':
-        if (req.url.endsWith('/me')) {
+        if (pathname.endsWith('/me')) {
           await handleGetCurrentUser(req, res);
         } else {
           res.status(404).json({ error: 'Endpoint not found' });
@@ -48,14 +50,22 @@ module.exports = async function handler(req, res) {
 
 // POST /api/auth/login - Iniciar sesión
 async function handleLogin(req, res) {
-  const { usuario, password } = req.body;
+  const { usuario, email, password } = req.body;
+  const loginField = usuario || email;
 
-  if (!usuario || !password) {
+  if (!loginField || !password) {
     return res.status(400).json({ error: 'Usuario y contraseña requeridos' });
   }
 
   try {
-    // Buscar usuario en la base de datos
+    // Buscar usuario en la base de datos por usuario o email
+    const result = await query(`
+      SELECT e.*, p.nombres, p.apellidos, p.email, r.nombre as rol_nombre, r.permisos 
+      FROM empleados e 
+      LEFT JOIN personas p ON e.persona_id = p.id 
+      LEFT JOIN roles r ON e.rol_id = r.id 
+      WHERE (e.usuario = $1 OR p.email = $1) AND e.activo = true
+    `, [loginField]);
     const userQuery = `
       SELECT 
         e.id,
