@@ -115,24 +115,28 @@ async function cargarDatosPedidos() {
 function abrirModalNuevoPedido() {
   // Crear el modal
   const modalHTML = `
-    <div id="modal-nuevo-pedido" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-90vh overflow-y-auto">
-        <!-- Header -->
-        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+    <div id="modal-nuevo-pedido" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+      <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full my-8 mx-auto">
+        <!-- Header Fijo -->
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white rounded-t-lg z-10">
           <h3 class="text-lg font-medium text-gray-900">🛒 Nuevo Pedido</h3>
-          <button onclick="cerrarModalNuevoPedido()" class="text-gray-400 hover:text-gray-600">
+          <button onclick="cerrarModalNuevoPedido()" class="text-gray-400 hover:text-gray-600 transition-colors">
             <i class="fas fa-times text-xl"></i>
           </button>
         </div>
 
-        <!-- Body -->
-        <form id="form-nuevo-pedido" class="p-6">
-          <!-- Información del Cliente -->
-          <div class="mb-6">
-            <h4 class="text-md font-medium text-gray-800 mb-3">👤 Información del Cliente</h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre del Cliente *</label>
+        <!-- Body con Scroll -->
+        <div class="max-h-[70vh] overflow-y-auto">
+          <form id="form-nuevo-pedido" class="p-6">
+            <!-- Información del Cliente -->
+            <div class="mb-6">
+              <h4 class="text-md font-medium text-gray-800 mb-3 flex items-center">
+                <i class="fas fa-user text-pink-500 mr-2"></i>
+                Información del Cliente
+              </h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Nombre del Cliente *</label>
                 <input type="text" id="cliente-nombre" required 
                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:border-pink-500 focus:ring-2 focus:ring-pink-200"
                        placeholder="Ej: María García">
@@ -149,9 +153,12 @@ function abrirModalNuevoPedido() {
           <!-- Productos del Pedido -->
           <div class="mb-6">
             <div class="flex items-center justify-between mb-3">
-              <h4 class="text-md font-medium text-gray-800">🛍️ Productos</h4>
+              <h4 class="text-md font-medium text-gray-800 flex items-center">
+                <i class="fas fa-shopping-bag text-pink-500 mr-2"></i>
+                Productos
+              </h4>
               <button type="button" onclick="agregarProductoPedido()" 
-                      class="bg-pink-100 hover:bg-pink-200 text-pink-600 px-3 py-1 rounded text-sm">
+                      class="bg-pink-100 hover:bg-pink-200 text-pink-600 px-3 py-1 rounded text-sm transition-colors">
                 <i class="fas fa-plus mr-1"></i> Agregar Producto
               </button>
             </div>
@@ -162,7 +169,10 @@ function abrirModalNuevoPedido() {
 
           <!-- Información de Entrega -->
           <div class="mb-6">
-            <h4 class="text-md font-medium text-gray-800 mb-3">📍 Información de Entrega</h4>
+            <h4 class="text-md font-medium text-gray-800 mb-3 flex items-center">
+              <i class="fas fa-truck text-pink-500 mr-2"></i>
+              Información de Entrega
+            </h4>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de Entrega *</label>
@@ -182,17 +192,6 @@ function abrirModalNuevoPedido() {
                         placeholder="Dirección completa de entrega"></textarea>
             </div>
           </div>
-
-          <!-- Total -->
-          <div class="mb-6 bg-gray-50 rounded-lg p-4">
-            <div class="flex items-center justify-between">
-              <span class="text-lg font-medium text-gray-800">Total del Pedido:</span>
-              <span id="total-pedido" class="text-2xl font-bold text-pink-600">$0</span>
-            </div>
-          </div>
-
-          <!-- Botones -->
-          <div class="flex gap-3">
             <button type="button" onclick="cerrarModalNuevoPedido()" 
                     class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-lg transition-colors">
               Cancelar
@@ -201,8 +200,35 @@ function abrirModalNuevoPedido() {
                     class="flex-1 bg-pink-500 hover:bg-pink-600 text-white py-2 px-4 rounded-lg transition-colors">
               <i class="fas fa-save mr-2"></i>Crear Pedido
             </button>
+            </div>
+          </form>
+        </div>
+        
+        <!-- Footer Fijo con Total y Botones -->
+        <div class="border-t border-gray-200 p-6 bg-white rounded-b-lg sticky bottom-0">
+          <!-- Total -->
+          <div class="mb-4 bg-gradient-to-r from-pink-50 to-purple-50 rounded-lg p-4">
+            <div class="flex items-center justify-between">
+              <span class="text-lg font-medium text-gray-800 flex items-center">
+                <i class="fas fa-calculator text-pink-500 mr-2"></i>
+                Total del Pedido:
+              </span>
+              <span id="total-pedido" class="text-2xl font-bold text-pink-600">$0</span>
+            </div>
           </div>
-        </form>
+
+          <!-- Botones -->
+          <div class="flex gap-3">
+            <button type="button" onclick="cerrarModalNuevoPedido()" 
+                    class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 px-4 rounded-lg transition-colors font-medium">
+              <i class="fas fa-times mr-2"></i>Cancelar
+            </button>
+            <button onclick="document.getElementById('form-nuevo-pedido').requestSubmit()" 
+                    class="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-3 px-4 rounded-lg transition-all transform hover:scale-105 font-medium shadow-lg">
+              <i class="fas fa-save mr-2"></i>Crear Pedido
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   `;
@@ -210,6 +236,9 @@ function abrirModalNuevoPedido() {
   // Agregar modal al DOM
   document.body.insertAdjacentHTML('beforeend', modalHTML);
 
+  // Prevenir scroll del body cuando el modal está abierto
+  document.body.style.overflow = 'hidden';
+  
   // Configurar fecha mínima (hoy)
   const fechaEntrega = document.getElementById('fecha-entrega');
   const hoy = new Date().toISOString().split('T')[0];
@@ -221,6 +250,13 @@ function abrirModalNuevoPedido() {
 
   // Configurar manejo del formulario
   document.getElementById('form-nuevo-pedido').addEventListener('submit', guardarNuevoPedido);
+  
+  // Cerrar modal con ESC
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      cerrarModalNuevoPedido();
+    }
+  });
 }
 
 function cerrarModalNuevoPedido() {
@@ -228,6 +264,9 @@ function cerrarModalNuevoPedido() {
   if (modal) {
     modal.remove();
   }
+  
+  // Restaurar scroll del body
+  document.body.style.overflow = '';
 }
 
 let contadorProductos = 0;
