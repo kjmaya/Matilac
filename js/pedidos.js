@@ -11,7 +11,14 @@ function cargarSeccionPedidos() {
   elemento.innerHTML = `
     <div class="container mx-auto p-6">
       <!-- Header -->
-      <div class="flex items-center justify-bet      <p class="text-sm text-gray-600 mb-2">
+      <div class="flex items-center justify-b      </p>
+      <p class="text-sm text-gray-600 mb-2">
+        📞 ${pedido.cliente_telefono || 'No especificado'}
+      </p>
+      <p class="text-sm text-gray-600 mb-2">
+        📋 ${pedido.numero_pedido || 'N/A'}
+      </p>
+      <div class="flex items-center justify-between"><p class="text-sm text-gray-600 mb-2">
         📋 ${pedido.numero_pedido || 'N/A'}
       </p>n mb-6">
         <div>
