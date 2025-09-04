@@ -18,26 +18,16 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const { pathname } = new URL(req.url, `http://${req.headers.host}`);
-    
+    // Para Vercel serverless functions, simplificar el routing
     switch (req.method) {
       case 'POST':
-        if (pathname.endsWith('/login') || pathname.endsWith('/auth')) {
-          await handleLogin(req, res);
-        } else if (pathname.endsWith('/logout')) {
-          await handleLogout(req, res);
-        } else if (pathname.endsWith('/verify')) {
-          await handleVerifyToken(req, res);
-        } else {
-          await handleLogin(req, res); // Default para /api/auth
-        }
+        await handleLogin(req, res);
         break;
       case 'GET':
-        if (pathname.endsWith('/me')) {
-          await handleGetCurrentUser(req, res);
-        } else {
-          res.status(404).json({ error: 'Endpoint not found' });
-        }
+        await handleGetCurrentUser(req, res);
+        break;
+      case 'DELETE':
+        await handleLogout(req, res);
         break;
       default:
         res.status(405).json({ error: 'Method not allowed' });

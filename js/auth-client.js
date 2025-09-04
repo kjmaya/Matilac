@@ -10,7 +10,7 @@ class AuthClient {
   // Iniciar sesión
   async login(usuario, password) {
     try {
-      const response = await fetch(`${this.baseUrl}/login`, {
+      const response = await fetch(this.baseUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -48,8 +48,8 @@ class AuthClient {
   async logout() {
     try {
       if (this.token) {
-        await fetch(`${this.baseUrl}/logout`, {
-          method: 'POST',
+        await fetch(this.baseUrl, {
+          method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${this.token}`,
             'Content-Type': 'application/json',
