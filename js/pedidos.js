@@ -11,7 +11,9 @@ function cargarSeccionPedidos() {
   elemento.innerHTML = `
     <div class="container mx-auto p-6">
       <!-- Header -->
-      <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center justify      <p class="text-sm text-gray-600 mb-2">
+        📋 ${pedido.numero_pedido || 'N/A'}
+      </p>tween mb-6">
         <div>
           <h2 class="text-2xl font-bold text-gray-800">📋 Gestión de Pedidos</h2>
           <p class="text-gray-600">Administra los pedidos de los clientes</p>
@@ -446,17 +448,11 @@ function actualizarTablaPedidos(pedidos) {
   
   document.getElementById('pedidos-hoy').textContent = pedidosHoy;
 }
-  const stats = calcularEstadisticasPedidos(pedidos);
-  document.getElementById('pedidos-hoy').textContent = stats.hoy;
-  document.getElementById('pedidos-preparacion').textContent = stats.preparacion;
-  document.getElementById('pedidos-completados').textContent = stats.completados;
-  document.getElementById('ingresos-hoy').textContent = `$${stats.ingresos.toLocaleString('es-CO')}`;
-}
 
 function getEstadoClases(estado) {
   switch(estado) {
     case 'pendiente': return 'bg-yellow-100 text-yellow-800';
-    case 'preparacion': return 'bg-blue-100 text-blue-800';
+    case 'en_proceso': return 'bg-blue-100 text-blue-800';
     case 'completado': return 'bg-green-100 text-green-800';
     case 'cancelado': return 'bg-red-100 text-red-800';
     default: return 'bg-gray-100 text-gray-800';

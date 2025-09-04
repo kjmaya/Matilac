@@ -35,6 +35,10 @@ function mostrarSeccion(id) {
   // Actualizar datos si es necesario
   if (id === "inventario") {
     actualizarInventario();
+  } else if (id === "pedidos") {
+    cargarSeccionPedidos();
+  } else if (id === "costos") {
+    cargarSeccionCostos();
   }
 }
 
