@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Sistema de gestión para productos lácteos Matilac",
   "main": "index.html",
-  "type": "module",
   "scripts": {
     "dev": "vercel dev",
     "build": "echo 'Build step'",

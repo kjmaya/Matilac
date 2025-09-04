@@ -1,12 +1,12 @@
 // api/auth.js - Sistema de autenticación
-import { query, transaction } from './db.js';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+const { query, transaction } = require('./db.js');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'matilac-default-secret-change-in-production';
 const JWT_EXPIRES = process.env.JWT_EXPIRES || '24h';
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // Headers CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');

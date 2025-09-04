@@ -1,5 +1,5 @@
 // api/db.js - Utilidad para conexión a la base de datos Neon PostgreSQL
-import { Pool } from 'pg';
+const { Pool } = require('pg');
 
 // Configuración del pool de conexiones
 let pool;
@@ -28,7 +28,7 @@ function getPool() {
 }
 
 // Función para ejecutar queries
-export async function query(text, params = []) {
+async function query(text, params = []) {
   const client = getPool();
   try {
     const start = Date.now();
@@ -47,7 +47,7 @@ export async function query(text, params = []) {
 }
 
 // Función para transacciones
-export async function transaction(callback) {
+async function transaction(callback) {
   const client = await getPool().connect();
   try {
     await client.query('BEGIN');
@@ -63,7 +63,7 @@ export async function transaction(callback) {
 }
 
 // Función para cerrar el pool (útil en testing)
-export async function closePool() {
+async function closePool() {
   if (pool) {
     await pool.end();
     pool = null;
@@ -71,7 +71,7 @@ export async function closePool() {
 }
 
 // Función para verificar la conexión
-export async function testConnection() {
+async function testConnection() {
   try {
     const result = await query('SELECT NOW() as current_time, version() as postgres_version');
     return {
@@ -85,3 +85,5 @@ export async function testConnection() {
     };
   }
 }
+
+module.exports = { query, transaction, closePool, testConnection };
