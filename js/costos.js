@@ -73,6 +73,7 @@ async function agregarCosto() {
   }
 
   try {
+    // Intentar guardar en API primero
     const response = await fetch('/api/costos', {
       method: 'POST',
       headers: {
@@ -92,7 +93,7 @@ async function agregarCosto() {
     }
 
     const result = await response.json();
-    mostrarNotificacion("Compra registrada exitosamente", "success");
+    mostrarNotificacion("✅ Compra guardada en base de datos", "success");
     
     // Limpiar formulario
     document.getElementById("costo-item").value = "";
@@ -100,14 +101,32 @@ async function agregarCosto() {
     document.getElementById("costo-descripcion").value = "";
     
     actualizarCostos();
+    
   } catch (error) {
-    console.error('Error:', error);
-    mostrarNotificacion("Error al registrar la compra", "error");
+    console.error('Error con API, guardando localmente:', error);
+    
+    // Fallback a localStorage
+    const compra = { item, valor, fecha, descripcion };
+    const data = JSON.parse(localStorage.getItem("costos") || "{}");
+
+    if (!data[fecha]) data[fecha] = [];
+    data[fecha].push(compra);
+
+    localStorage.setItem("costos", JSON.stringify(data));
+    mostrarNotificacion("💾 Compra guardada localmente (modo desarrollo)", "success");
+    
+    // Limpiar formulario
+    document.getElementById("costo-item").value = "";
+    document.getElementById("costo-valor").value = "";
+    document.getElementById("costo-descripcion").value = "";
+    
+    actualizarCostos();
   }
 }
 
 async function actualizarCostos() {
   try {
+    // Intentar cargar desde API
     const response = await fetch('/api/costos');
     if (!response.ok) {
       throw new Error('Error al cargar costos');
@@ -214,8 +233,81 @@ async function actualizarCostos() {
     contenedor.appendChild(totalCard);
     
   } catch (error) {
-    console.error('Error cargando costos:', error);
-    mostrarNotificacion("Error al cargar los costos", "error");
+    console.error('Error cargando costos desde API, usando localStorage:', error);
+    
+    // Fallback a localStorage para desarrollo local
+    const data = JSON.parse(localStorage.getItem("costos") || "{}");
+    const contenedor = document.getElementById("contenedor-costos");
+    if (!contenedor) return;
+    
+    contenedor.innerHTML = "";
+
+    if (Object.keys(data).length === 0) {
+      contenedor.innerHTML = `
+        <div class="text-center py-12 text-gray-500">
+          <i class="fas fa-receipt text-6xl mb-4 opacity-20"></i>
+          <p class="text-lg">No hay compras registradas</p>
+          <p class="text-sm text-blue-600">💡 Modo desarrollo - usando localStorage</p>
+        </div>
+      `;
+      return;
+    }
+
+    Object.keys(data).sort().reverse().forEach(fecha => {
+      const compras = data[fecha];
+      let subtotal = 0;
+
+      const card = document.createElement("div");
+      card.className = "bg-white rounded-xl shadow-sm overflow-hidden mb-6";
+
+      let comprasHTML = compras.map((c, index) => {
+        subtotal += c.valor;
+        return `
+          <tr class="hover:bg-gray-50 transition-colors">
+            <td class="px-6 py-4 font-medium">${c.item}</td>
+            <td class="px-6 py-4 text-green-600 font-semibold">$${c.valor.toLocaleString()}</td>
+            <td class="px-6 py-4 text-gray-600">${c.descripcion || '-'}</td>
+            <td class="px-6 py-4 text-center">
+              <button onclick="eliminarCostoLocal('${fecha}', ${index})" class="text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-1 rounded transition-all">
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
+          </tr>`;
+      }).join("");
+
+      card.innerHTML = `
+        <div class="px-6 py-4 bg-gradient-to-r from-pink-50 to-rose-50 border-b border-pink-100">
+          <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+            <i class="fas fa-calendar"></i>
+            ${formatearFecha(fecha)}
+            <span class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">LOCAL</span>
+          </h3>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b border-gray-100">
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valor</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
+                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              ${comprasHTML}
+            </tbody>
+          </table>
+        </div>
+        <div class="px-6 py-4 bg-gray-50 border-t border-gray-100">
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-600">${compras.length} compra(s)</span>
+            <span class="text-lg font-bold text-green-600">Subtotal: $${subtotal.toLocaleString()}</span>
+          </div>
+        </div>
+      `;
+
+      contenedor.appendChild(card);
+    });
   }
 }
 
@@ -238,5 +330,20 @@ async function eliminarCosto(id) {
   } catch (error) {
     console.error('Error:', error);
     mostrarNotificacion("Error al eliminar el costo", "error");
+  }
+}
+
+function eliminarCostoLocal(fecha, index) {
+  if (!confirm('¿Estás seguro de que quieres eliminar este costo?')) {
+    return;
+  }
+
+  const data = JSON.parse(localStorage.getItem("costos") || "{}");
+  if (data[fecha]) {
+    data[fecha].splice(index, 1);
+    if (data[fecha].length === 0) delete data[fecha];
+    localStorage.setItem("costos", JSON.stringify(data));
+    mostrarNotificacion("💾 Costo eliminado del almacenamiento local", "success");
+    actualizarCostos();
   }
 }

@@ -103,14 +103,18 @@ async function cargarDatosPedidos() {
     }
     
     const result = await response.json();
-    console.log('Pedidos cargados:', result);
+    console.log('✅ Pedidos cargados desde base de datos:', result);
     
     const pedidos = result.pedidos || [];
-    actualizarTablaPedidos(pedidos);
+    actualizarTablaPedidos(pedidos, false); // false = desde DB
     
   } catch (error) {
-    console.error('Error cargando pedidos:', error);
-    mostrarNotificacion('Error al cargar los pedidos', 'error');
+    console.error('Error cargando pedidos desde API, usando localStorage:', error);
+    
+    // Fallback a localStorage
+    const pedidosLocal = JSON.parse(localStorage.getItem('pedidos') || '[]');
+    console.log('💾 Pedidos cargados desde localStorage:', pedidosLocal);
+    actualizarTablaPedidos(pedidosLocal, true); // true = desde localStorage
   }
 }
 
