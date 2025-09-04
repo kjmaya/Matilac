@@ -82,7 +82,7 @@ class AuthClient {
     }
 
     try {
-      const response = await fetch(`${this.baseUrl}/verify`, {
+      const response = await fetch(this.baseUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

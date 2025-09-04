@@ -1,6 +1,6 @@
 // Inicialización de la aplicación
 document.addEventListener('DOMContentLoaded', async function() {
-  console.log('Inicializando Matilac...');
+  console.log('Inicializando Matilac v2.0.0...');
   
   // Verificar autenticación primero
   if (!authClient.isAuthenticated) {
@@ -9,13 +9,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     return;
   }
 
-  // Verificar que el token sea válido
-  const isValidToken = await authClient.verifyToken();
-  if (!isValidToken) {
-    console.log('Token inválido, redirigiendo a login...');
-    window.location.href = 'login.html';
-    return;
-  }
+  console.log('Usuario autenticado:', authClient.user);
 
   // Inicializar interfaz de usuario
   initializeUserInterface();

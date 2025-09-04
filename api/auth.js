@@ -21,7 +21,12 @@ module.exports = async function handler(req, res) {
     // Para Vercel serverless functions, simplificar el routing
     switch (req.method) {
       case 'POST':
-        await handleLogin(req, res);
+        // Distinguir entre login y verify
+        if (req.url.includes('verify') || req.body.token) {
+          await handleVerifyToken(req, res);
+        } else {
+          await handleLogin(req, res);
+        }
         break;
       case 'GET':
         await handleGetCurrentUser(req, res);
@@ -236,5 +241,44 @@ async function handleGetCurrentUser(req, res) {
   } catch (error) {
     console.error('Get current user error:', error);
     res.status(401).json({ error: 'Token inválido' });
+  }
+}
+
+// Verificar token
+async function handleVerifyToken(req, res) {
+  try {
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ valid: false, error: 'Token requerido' });
+    }
+
+    // Verificar y decodificar token
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    // Verificar que el usuario aún existe y está activo
+    const userQuery = `
+      SELECT 
+        e.id,
+        e.usuario,
+        e.activo
+      FROM empleados e
+      WHERE e.id = $1 AND e.activo = true
+    `;
+    
+    const userResult = await query(userQuery, [decoded.empleado_id]);
+
+    if (userResult.rows.length === 0) {
+      return res.status(200).json({ valid: false, error: 'Usuario no encontrado o inactivo' });
+    }
+
+    res.status(200).json({ valid: true, user: userResult.rows[0] });
+
+  } catch (error) {
+    console.error('Verify token error:', error);
+    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+      return res.status(200).json({ valid: false, error: 'Token inválido o expirado' });
+    }
+    res.status(500).json({ valid: false, error: 'Error interno del servidor' });
   }
 }
