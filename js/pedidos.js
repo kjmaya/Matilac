@@ -95,20 +95,22 @@ function cargarSeccionPedidos() {
 
 async function cargarDatosPedidos() {
   try {
-    // Aquí irían las llamadas reales a la API
-    // Por ahora, cargar desde localStorage
     console.log('Cargando datos de pedidos...');
     
-    // Cargar y mostrar pedidos existentes
-    actualizarListaPedidos();
+    const response = await fetch('/api/pedidos');
+    if (!response.ok) {
+        throw new Error('Error al cargar pedidos');
+    }
     
-    // Actualizar stats con datos reales cuando esté listo
-    // const response = await fetch('/api/pedidos');
-    // const data = await response.json();
-    // document.getElementById('pedidos-hoy').textContent = data.pedidosHoy;
+    const result = await response.json();
+    console.log('Pedidos cargados:', result);
+    
+    const pedidos = result.pedidos || [];
+    actualizarTablaPedidos(pedidos);
     
   } catch (error) {
     console.error('Error cargando pedidos:', error);
+    mostrarNotificacion('Error al cargar los pedidos', 'error');
   }
 }
 
@@ -332,8 +334,10 @@ async function guardarNuevoPedido(event) {
   
   // Recopilar datos del formulario
   const cliente = {
-    nombre: document.getElementById('cliente-nombre').value,
-    telefono: document.getElementById('cliente-telefono').value
+    nombres: document.getElementById('cliente-nombre').value.split(' ')[0] || '',
+    apellidos: document.getElementById('cliente-nombre').value.split(' ').slice(1).join(' ') || '',
+    telefono: document.getElementById('cliente-telefono').value,
+    direccion: document.getElementById('direccion-entrega').value
   };
   
   const productos = [];
@@ -349,27 +353,33 @@ async function guardarNuevoPedido(event) {
   
   const fechaEntrega = document.getElementById('fecha-entrega').value;
   const horaEntrega = document.getElementById('hora-entrega').value;
-  const direccion = document.getElementById('direccion-entrega').value;
+  const notas = `Hora de entrega: ${horaEntrega}`;
   
-  const total = productos.reduce((sum, p) => sum + p.subtotal, 0);
-  
-  const pedido = {
-    id: Date.now(), // ID temporal
-    cliente,
-    productos,
-    fechaEntrega,
-    horaEntrega,
-    direccion,
-    total,
-    estado: 'pendiente',
-    fechaCreacion: new Date().toISOString()
-  };
+  if (!cliente.nombres || !cliente.telefono || productos.length === 0 || !fechaEntrega) {
+    mostrarNotificacion('Por favor completa todos los campos requeridos', 'error');
+    return;
+  }
   
   try {
-    // Guardar en localStorage por ahora (después integrar con API)
-    const pedidos = JSON.parse(localStorage.getItem('pedidos') || '[]');
-    pedidos.unshift(pedido);
-    localStorage.setItem('pedidos', JSON.stringify(pedidos));
+    const response = await fetch('/api/pedidos', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        cliente,
+        productos,
+        fecha_entrega: fechaEntrega,
+        notas
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al guardar pedido');
+    }
+
+    const result = await response.json();
+    mostrarNotificacion('Pedido creado exitosamente', 'success');
     
     // Cerrar modal
     cerrarModalNuevoPedido();
@@ -387,8 +397,7 @@ async function guardarNuevoPedido(event) {
   }
 }
 
-function actualizarListaPedidos() {
-  const pedidos = JSON.parse(localStorage.getItem('pedidos') || '[]');
+function actualizarTablaPedidos(pedidos) {
   const lista = document.getElementById('lista-pedidos');
   
   if (pedidos.length === 0) {
@@ -405,20 +414,22 @@ function actualizarListaPedidos() {
   lista.innerHTML = pedidos.slice(0, 10).map(pedido => `
     <div class="border border-gray-200 rounded-lg p-4 mb-4">
       <div class="flex items-center justify-between mb-2">
-        <h4 class="font-medium text-gray-800">${pedido.cliente.nombre}</h4>
+        <h4 class="font-medium text-gray-800">${pedido.cliente_nombre || 'Cliente'}</h4>
         <span class="px-2 py-1 text-xs rounded-full ${getEstadoClases(pedido.estado)}">
           ${pedido.estado.toUpperCase()}
         </span>
       </div>
       <p class="text-sm text-gray-600 mb-2">
-        📅 ${new Date(pedido.fechaEntrega).toLocaleDateString('es-CO')} 
-        ${pedido.horaEntrega ? `a las ${pedido.horaEntrega}` : ''}
+        📅 ${new Date(pedido.fecha_entrega || pedido.fecha_pedido).toLocaleDateString('es-CO')}
       </p>
       <p class="text-sm text-gray-600 mb-2">
-        📦 ${pedido.productos.length} producto${pedido.productos.length !== 1 ? 's' : ''}
+        📞 ${pedido.cliente_telefono || 'No especificado'}
+      </p>
+      <p class="text-sm text-gray-600 mb-2">
+        � ${pedido.numero_pedido || 'N/A'}
       </p>
       <div class="flex items-center justify-between">
-        <span class="font-bold text-pink-600">$${pedido.total.toLocaleString('es-CO')}</span>
+        <span class="font-bold text-pink-600">$${parseFloat(pedido.total || 0).toLocaleString('es-CO')}</span>
         <button onclick="verDetallePedido(${pedido.id})" 
                 class="text-blue-600 hover:text-blue-800 text-sm">
           Ver detalles →
@@ -428,6 +439,13 @@ function actualizarListaPedidos() {
   `).join('');
   
   // Actualizar estadísticas
+  const pedidosHoy = pedidos.filter(p => {
+    const hoy = new Date().toISOString().split('T')[0];
+    return (p.fecha_pedido || '').startsWith(hoy);
+  }).length;
+  
+  document.getElementById('pedidos-hoy').textContent = pedidosHoy;
+}
   const stats = calcularEstadisticasPedidos(pedidos);
   document.getElementById('pedidos-hoy').textContent = stats.hoy;
   document.getElementById('pedidos-preparacion').textContent = stats.preparacion;
@@ -445,21 +463,7 @@ function getEstadoClases(estado) {
   }
 }
 
-function calcularEstadisticasPedidos(pedidos) {
-  const hoy = new Date().toISOString().split('T')[0];
-  
-  const pedidosHoy = pedidos.filter(p => p.fechaCreacion.split('T')[0] === hoy);
-  const preparacion = pedidos.filter(p => p.estado === 'preparacion').length;
-  const completados = pedidos.filter(p => p.estado === 'completado').length;
-  const ingresos = pedidosHoy.reduce((sum, p) => sum + p.total, 0);
-  
-  return {
-    hoy: pedidosHoy.length,
-    preparacion,
-    completados,
-    ingresos
-  };
-}
+
 
 function verDetallePedido(id) {
   alert(`Ver detalle del pedido ${id} - Funcionalidad en desarrollo`);
