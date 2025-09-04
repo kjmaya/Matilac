@@ -3,7 +3,7 @@ function cargarSeccionInventario() {
   const seccionInventario = document.getElementById('seccion-inventario');
   
   seccionInventario.innerHTML = `
-    <section id="inventario" class="seccion">
+    <div class="container mx-auto p-6">
       <h2 class="text-2xl font-bold text-pink-700 mb-4">Inventario General</h2>
       
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -47,7 +47,7 @@ function cargarSeccionInventario() {
         <div id="tarjetas-inventario" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         </div>
       </div>
-    </section>
+    </div>
   `;
 }
 

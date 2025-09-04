@@ -3,7 +3,7 @@ function cargarSeccionCostos() {
   const seccionCostos = document.getElementById('seccion-costos');
   
   seccionCostos.innerHTML = `
-    <section id="costos" class="seccion">
+    <div class="container mx-auto p-6">
       <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
         <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
           <i class="fas fa-receipt text-pink-500"></i>
@@ -39,7 +39,7 @@ function cargarSeccionCostos() {
       </div>
 
       <div id="contenedor-costos"></div>
-    </section>
+    </div>
   `;
   
   // Establecer fecha actual
