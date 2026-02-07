@@ -2,7 +2,7 @@
 const productosPorCategoria = {
   "Lácteos": ["Yogurt", "Pulpa de avena", "Queso"],
   "Panadería": ["Envueltos", "Almojábanas", "Arepas"],
-  "Otros": ["Rellenas", "Panela", "Huevos", "Longaniza"]
+  "Otros": ["Rellenas", "Panela", "Huevos", "Almuerzo"]
 };
 
 const yogurtSabores = ["Durazno", "Fresa", "Mora", "Guanábana", "Feijoa"];
@@ -22,12 +22,13 @@ const PRECIOS = {
     "Especial": 3500
   },
   arepas: {
-    "Boyacense": 4000,
+    "Boyacense": 3000,
     "de Chocolo": 5000
   },
   rellenas: 2500,
   panela: 30000,
-  longaniza: 7000,
+  almuerzo: 15000,
+  pulpaAvena: 5000,
   huevos: 15000
 };
 
@@ -89,8 +90,8 @@ const PRODUCTOS_INFO = [
     imagen: "https://www.infobae.com/new-resizer/Owbs3cevi58yv_i19oFHy6ewqEA=/arc-anglerfish-arc2-prod-infobae/public/PHHWHA74SFBV3OPDVDTDQANJ7U.jpg"
   },
   {
-    nombre: "Longaniza",
-    descripcion: "Deliciosa longaniza fresca y artesanal.",
+    nombre: "Almuerzo ",
+    descripcion: "Delicioso almuerzo con rellena papa longaniza y yuca.",
     imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRofsuAcfH5EI6UmOkrjJJE5BVsfBUjJnahwxz6ZtG27QQfoKiJZyUbP5c-aHolD4nQLTw&usqp=CAU"
   },
   {
