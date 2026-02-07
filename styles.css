@@ -410,7 +410,7 @@ input:hover, select:hover, textarea:hover {
 /* ==========================================
    LOADING / SKELETON
    ========================================== */
-.loading {
+.custom-spinner {
   display: inline-block;
   width: 24px;
   height: 24px;
