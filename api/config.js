@@ -1,5 +1,5 @@
 // api/config.js - Configuración de la base de datos Neon PostgreSQL
-export default function handler(req, res) {
+module.exports = function handler(req, res) {
   // Agregar headers CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
