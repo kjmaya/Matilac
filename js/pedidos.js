@@ -506,11 +506,9 @@ function guardarNuevoPedido() {
   pedidos.push(nuevoPedido);
   localStorage.setItem('pedidos', JSON.stringify(pedidos));
 
-  // Trigger sync
+  // Sincronizar con GitHub
   if (window.matilacSync && typeof window.matilacSync.syncAfterPedido === 'function') {
       window.matilacSync.syncAfterPedido();
-  } else {
-      console.log('Sync no disponible o no configurado aún');
   }
 
   cerrarModalNuevoPedido();
@@ -531,7 +529,6 @@ function eliminarPedido(index) {
         pedidos.splice(index, 1);
         localStorage.setItem('pedidos', JSON.stringify(pedidos));
         cargarDatosPedidos();
-        
         if (window.matilacSync && window.matilacSync.syncAfterPedido) {
             window.matilacSync.syncAfterPedido();
         }
@@ -549,7 +546,6 @@ function cambiarEstadoPedido(index) {
     pedidos[index].estado = estados[nextIdx];
     localStorage.setItem('pedidos', JSON.stringify(pedidos));
     cargarDatosPedidos();
-
     if (window.matilacSync && window.matilacSync.syncAfterPedido) {
         window.matilacSync.syncAfterPedido();
     }

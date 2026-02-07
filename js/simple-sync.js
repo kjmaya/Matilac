@@ -212,6 +212,7 @@ class MatilacSync {
         // Actualizar localStorage con datos de GitHub
         localStorage.setItem('pedidos', JSON.stringify(content.pedidos || []));
         localStorage.setItem('costos', JSON.stringify(content.costos || {}));
+        localStorage.setItem('inventario', JSON.stringify(content.inventario || []));
         localStorage.setItem('lastSync', new Date().toISOString());
         
         this.sha = data.sha; // Necesario para futuras actualizaciones
@@ -244,6 +245,7 @@ class MatilacSync {
     const initialData = {
       pedidos: JSON.parse(localStorage.getItem('pedidos') || '[]'),
       costos: JSON.parse(localStorage.getItem('costos') || '{}'),
+      inventario: JSON.parse(localStorage.getItem('inventario') || '[]'),
       lastSync: new Date().toISOString(),
       version: '1.0.0'
     };
@@ -303,6 +305,7 @@ class MatilacSync {
       const currentData = {
         pedidos: JSON.parse(localStorage.getItem('pedidos') || '[]'),
         costos: JSON.parse(localStorage.getItem('costos') || '{}'),
+        inventario: JSON.parse(localStorage.getItem('inventario') || '[]'),
         lastSync: new Date().toISOString(),
         version: '1.0.0'
       };
