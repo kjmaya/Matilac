@@ -39,6 +39,11 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body class="bg-gradient-to-br from-gray-50 via-white to-pink-50/30 text-gray-800 font-sans min-h-screen">
+  <!-- Login Screen -->
+  <div id="login-container" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-white to-rose-50" style="display:none;"></div>
+
+  <!-- App Container (oculto hasta login) -->
+  <div id="app-container" style="display:none;">
   <!-- Overlay para móvil -->
   <div class="sidebar-overlay lg:hidden" id="sidebar-overlay" onclick="toggleSidebar()"></div>
   
@@ -136,6 +141,7 @@
           <h2 class="text-xl sm:text-2xl font-bold text-gray-800" id="section-title">Dashboard</h2>
         </div>
         <div class="flex items-center gap-2 sm:gap-4">
+          <div id="user-badge"></div>
           <span class="hidden sm:block text-sm text-gray-500 bg-gray-50 px-4 py-2 rounded-lg" id="current-date"></span>
           <div class="relative">
             <button class="w-10 h-10 sm:w-11 sm:h-11 bg-gradient-to-br from-pink-100 to-rose-100 rounded-xl flex items-center justify-center hover:from-pink-200 hover:to-rose-200 transition-all duration-300 shadow-sm">
@@ -157,11 +163,13 @@
       <div id="seccion-config"></div>
     </div>
   </main>
+  </div><!-- /app-container -->
 
   <!-- Notification container -->
   <div id="notification-container" class="fixed top-4 right-4 z-[60] space-y-3"></div>
 
   <!-- Scripts -->
+  <script src="js/auth.js"></script>
   <script src="js/config.js"></script>
   <script src="js/env.js"></script>
   <script src="js/navigation.js"></script>
