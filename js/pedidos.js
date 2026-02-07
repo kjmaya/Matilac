@@ -1,612 +1,566 @@
-function agregarPedido() {
-  const categoria = document.getElementById("categoria").value;
-  const producto = document.getElementById("producto").value;
-  const cantidad = parseInt(document.getElementById("cantidad").value);
-  const precio = parseInt(document.getElementById("precio").value);
-  const fecha = document.getElementById("fecha").value;
-  const cliente = document.getElementById("cliente").value;
+// js/pedidos.js - Gestión de pedidos con soporte para LocalStorage y UI Moderna
 
-  if (!categoria || !producto || !cantidad || !precio || !fecha || !cliente) {
-    mostrarNotificacion("Por favor completa todos los campos", "error");
+// Función principal para cargar la sección
+function cargarSeccionPedidos() {
+  console.log('Cargando sección de pedidos...');
+  const elemento = document.getElementById('seccion-pedidos');
+  
+  if (!elemento) {
+    console.error('Elemento seccion-pedidos no encontrado');
     return;
   }
 
-  let detalle = producto;
+  // Renderizar Dashboard
+  elemento.innerHTML = `
+    <section id="pedidos" class="seccion container mx-auto px-4 py-6" style="transition: opacity 0.3s ease;">
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
+        <div>
+          <h2 class="text-3xl font-bold text-gray-800 flex items-center gap-2">
+            <span class="bg-clip-text text-transparent bg-gradient-to-r from-pink-600 to-purple-600">Gestión de Pedidos</span>
+          </h2>
+          <p class="text-gray-500 mt-1">Administra tus ventas y entregas</p>
+        </div>
+        <button onclick="abrirModalNuevoPedido()" class="w-full sm:w-auto bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 font-medium group">
+          <div class="bg-white/20 p-1 rounded-lg group-hover:rotate-90 transition-transform">
+             <i class="fas fa-plus text-sm"></i>
+          </div>
+          Nuevo Pedido
+        </button>
+      </div>
 
-  if (producto === "Yogurt") {
-    const tamaño = document.getElementById("tamañoYogurt").value;
-    const sabor = document.getElementById("saborYogurt").value;
-    if (!tamaño || !sabor) {
-      mostrarNotificacion("Selecciona tamaño y sabor del yogurt", "error");
-      return;
-    }
-    detalle += ` ${tamaño} de ${sabor}`;
-  }
-
-  if (producto === "Queso") {
-    const tipo = document.getElementById("tipoQueso").value;
-    if (!tipo) {
-      mostrarNotificacion("Selecciona tipo de queso", "error");
-      return;
-    }
-    detalle += ` ${tipo}`;
-  }
-
-  if (producto === "Envueltos") {
-    const tipo = document.getElementById("tipoEnvueltos").value;
-    if (!tipo) {
-      mostrarNotificacion("Selecciona tipo de envuelto", "error");
-      return;
-    }
-    detalle += ` ${tipo}`;
-  }
-
-  if (producto === "Arepas") {
-    const tipo = document.getElementById("tipoArepas").value;
-    if (!tipo) {
-      mostrarNotificacion("Selecciona tipo de arepa", "error");
-      return;
-    }
-    detalle += ` ${tipo}`;
-  }
-
-  const pedido = { categoria, producto: detalle, cantidad, precio, fecha, cliente };
-
-  const pedidos = JSON.parse(localStorage.getItem("pedidos") || "[]");
-  pedidos.push(pedido);
-  localStorage.setItem("pedidos", JSON.stringify(pedidos));
-  
-  mostrarNotificacion("Pedido agregado exitosamente", "success");
-  actualizarTablas();
-  limpiarCampos();
-}
-
-// Funciones para la gestión de pedidos
-function cargarSeccionPedidos() {
-  const seccionPedidos = document.getElementById('seccion-pedidos');
-  
-  seccionPedidos.innerHTML = `
-    <section id="pedidos" class="seccion" style="transition: opacity 0.3s ease;">
-      <!-- Formulario de nuevo pedido -->
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-100/50 p-4 sm:p-6 mb-6">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <div class="flex items-center gap-3">
-            <div class="w-12 h-12 bg-gradient-to-br from-pink-500 to-rose-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-pink-500/30">
-              <i class="fas fa-shopping-cart"></i>
-            </div>
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Pedidos Hoy -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+          <div class="flex items-start justify-between">
             <div>
-              <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Nuevo Pedido</h2>
-              <p class="text-sm text-gray-500">Registra una nueva venta</p>
+              <p class="text-sm font-medium text-gray-500 mb-1">Pedidos Hoy</p>
+              <h3 class="text-3xl font-bold text-gray-800" id="pedidos-hoy">0</h3>
+            </div>
+            <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-500">
+              <i class="fas fa-calendar-day text-xl"></i>
             </div>
           </div>
         </div>
-        
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          <div class="space-y-2">
-            <label class="block text-sm font-semibold text-gray-700">
-              <i class="fas fa-tag text-pink-500 mr-1"></i> Categoría
-            </label>
-            <select id="categoria" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-pink-500 focus:ring-4 focus:ring-pink-100 transition-all bg-gray-50 hover:bg-white">
-              <option value="">Selecciona una categoría</option>
-              <option value="Lácteos">🥛 Lácteos</option>
-              <option value="Panadería">🥖 Panadería</option>
-              <option value="Otros">📦 Otros</option>
-            </select>
-          </div>
 
-          <div class="space-y-2">
-            <label class="block text-sm font-semibold text-gray-700">
-              <i class="fas fa-box text-pink-500 mr-1"></i> Producto
-            </label>
-            <select id="producto" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-pink-500 focus:ring-4 focus:ring-pink-100 transition-all bg-gray-50 hover:bg-white">
-              <option value="">Selecciona un producto</option>
-            </select>
-          </div>
-
-          <!-- Contenedor para opciones dinámicas (tamaño, sabor, tipo) -->
-          <div id="opcionesEspecificas" class="hidden space-y-4 sm:col-span-2 lg:col-span-1">
-          </div>
-
-          <div class="space-y-2">
-            <label class="block text-sm font-semibold text-gray-700">
-              <i class="fas fa-hashtag text-pink-500 mr-1"></i> Cantidad
-            </label>
-            <div class="flex items-center border-2 border-gray-200 rounded-xl overflow-hidden bg-gray-50 hover:bg-white transition-all focus-within:border-pink-500 focus-within:ring-4 focus-within:ring-pink-100">
-              <button type="button" onclick="cambiarCantidad(-1)" class="px-4 py-3 bg-gray-100 hover:bg-gray-200 transition-colors">
-                <i class="fas fa-minus text-gray-600"></i>
-              </button>
-              <input type="number" id="cantidad" placeholder="0" class="flex-1 text-center border-0 py-3 bg-transparent focus:ring-0" min="1" value="1">
-              <button type="button" onclick="cambiarCantidad(1)" class="px-4 py-3 bg-gray-100 hover:bg-gray-200 transition-colors">
-                <i class="fas fa-plus text-gray-600"></i>
-              </button>
+        <!-- Ventas Hoy -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-sm font-medium text-gray-500 mb-1">Ventas Hoy</p>
+              <h3 class="text-3xl font-bold text-gray-800" id="ingresos-hoy">$0</h3>
             </div>
-          </div>
-
-          <div class="space-y-2">
-            <label class="block text-sm font-semibold text-gray-700">
-              <i class="fas fa-dollar-sign text-green-500 mr-1"></i> Precio Total
-            </label>
-            <div class="relative">
-              <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 font-bold">$</span>
-              <input type="number" id="precio" placeholder="0" class="w-full border-2 border-gray-200 rounded-xl pl-8 pr-4 py-3 bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 font-bold cursor-not-allowed" readonly>
+            <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center text-green-500">
+              <i class="fas fa-dollar-sign text-xl"></i>
             </div>
-          </div>
-
-          <div class="space-y-2">
-            <label class="block text-sm font-semibold text-gray-700">
-              <i class="fas fa-calendar text-pink-500 mr-1"></i> Fecha
-            </label>
-            <input type="date" id="fecha" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-pink-500 focus:ring-4 focus:ring-pink-100 transition-all bg-gray-50 hover:bg-white">
-          </div>
-
-          <div class="space-y-2 sm:col-span-2 lg:col-span-1">
-            <label class="block text-sm font-semibold text-gray-700">
-              <i class="fas fa-user text-pink-500 mr-1"></i> Cliente
-            </label>
-            <input type="text" id="cliente" placeholder="Nombre del cliente" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-pink-500 focus:ring-4 focus:ring-pink-100 transition-all bg-gray-50 hover:bg-white">
           </div>
         </div>
 
-        <div class="mt-6 flex flex-col sm:flex-row gap-3">
-          <button onclick="agregarPedido()" class="btn-primary flex-1 sm:flex-none">
-            <i class="fas fa-plus"></i>
-            Agregar Pedido
-          </button>
-          <button onclick="limpiarCampos()" class="btn-secondary px-6 py-3 flex items-center justify-center gap-2">
-            <i class="fas fa-eraser"></i>
-            Limpiar
-          </button>
+        <!-- Pendientes -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-sm font-medium text-gray-500 mb-1">Pendientes</p>
+              <h3 class="text-3xl font-bold text-gray-800" id="pedidos-pendientes">0</h3>
+            </div>
+            <div class="w-12 h-12 bg-yellow-50 rounded-xl flex items-center justify-center text-yellow-500">
+              <i class="fas fa-clock text-xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Historico -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-sm font-medium text-gray-500 mb-1">Total Histórico</p>
+              <h3 class="text-3xl font-bold text-gray-800" id="pedidos-total">0</h3>
+            </div>
+            <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center text-purple-500">
+              <i class="fas fa-folder text-xl"></i>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Lista de pedidos -->
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-100/50 overflow-hidden">
-        <div class="px-4 sm:px-6 py-4 bg-gradient-to-r from-pink-50 to-rose-50 border-b border-pink-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-            <i class="fas fa-list-ul text-pink-500"></i>
-            Pedidos Registrados
-          </h3>
-          <div class="flex items-center gap-2">
-            <span class="text-sm text-gray-500 bg-white px-3 py-1 rounded-lg" id="totalPedidosCount">0 pedidos</span>
+      <!-- Tabla de Pedidos -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="p-6 border-b border-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <h3 class="text-lg font-bold text-gray-800">Historial de Pedidos</h3>
+          <div class="relative w-full sm:w-64">
+             <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+             <input type="text" placeholder="Buscar cliente..." class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-100 focus:border-pink-300 text-sm" onkeyup="filtrarPedidos(this.value)">
           </div>
         </div>
         
-        <!-- Vista de escritorio -->
-        <div class="hidden sm:block overflow-x-auto">
-          <table class="w-full custom-table">
-            <thead>
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-50/50">
               <tr>
-                <th class="px-4 lg:px-6 py-4 text-left">Fecha</th>
-                <th class="px-4 lg:px-6 py-4 text-left">Cliente</th>
-                <th class="px-4 lg:px-6 py-4 text-left">Categoría</th>
-                <th class="px-4 lg:px-6 py-4 text-left">Producto</th>
-                <th class="px-4 lg:px-6 py-4 text-center">Cant.</th>
-                <th class="px-4 lg:px-6 py-4 text-right">Precio</th>
-                <th class="px-4 lg:px-6 py-4 text-center">Acción</th>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Fecha</th>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Cliente</th>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Producto</th>
+                <th class="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Cant.</th>
+                <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total</th>
+                <th class="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Estado</th>
+                <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Acciones</th>
               </tr>
             </thead>
-            <tbody id="tablaPedidos" class="divide-y divide-gray-100"></tbody>
+            <tbody id="lista-pedidos" class="divide-y divide-gray-50">
+               <!-- Se rellena con JS -->
+            </tbody>
           </table>
         </div>
         
-        <!-- Vista móvil de tarjetas -->
-        <div class="sm:hidden" id="tablaPedidosMobile"></div>
+        <!-- Empty State -->
+        <div id="empty-state" class="hidden p-12 text-center">
+          <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-clipboard-list text-3xl text-gray-300"></i>
+          </div>
+          <h4 class="text-gray-900 font-medium mb-1">No hay pedidos aún</h4>
+          <p class="text-gray-500 text-sm">Registra tu primer pedido para comenzar.</p>
+        </div>
       </div>
     </section>
   `;
+
+  // Cargar datos
+  cargarDatosPedidos();
+}
+
+// Carga los datos desde localStorage y refresca la UI
+function cargarDatosPedidos() {
+  const pedidos = JSON.parse(localStorage.getItem('pedidos') || '[]');
   
-  // Configurar event listeners
-  configurarEventListenersPedidos();
+  // Calcular stats
+  const hoy = new Date().toISOString().split('T')[0];
+  const pedidosHoy = pedidos.filter(p => p.fecha === hoy);
   
-  // Establecer fecha actual
-  document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('pedidos-hoy').textContent = pedidosHoy.length;
+  
+  const ingresos = pedidosHoy.reduce((acc, p) => acc + (parseFloat(p.precio) || 0), 0);
+  document.getElementById('ingresos-hoy').textContent = `$${ingresos.toLocaleString('es-CO')}`;
+  
+  document.getElementById('pedidos-pendientes').textContent = pedidos.filter(p => p.estado !== 'completado').length;
+  document.getElementById('pedidos-total').textContent = pedidos.length;
+
+  // Renderizar tabla
+  actualizarTablaPedidos(pedidos);
 }
 
-// Función para cambiar cantidad con botones
-function cambiarCantidad(delta) {
-  const input = document.getElementById('cantidad');
-  let valor = parseInt(input.value) || 1;
-  valor = Math.max(1, valor + delta);
-  input.value = valor;
-  actualizarTotal();
+function actualizarTablaPedidos(pedidos) {
+  const tbody = document.getElementById('lista-pedidos');
+  const emptyState = document.getElementById('empty-state');
+  
+  if (pedidos.length === 0) {
+    tbody.innerHTML = '';
+    emptyState.classList.remove('hidden');
+    return;
+  }
+  
+  emptyState.classList.add('hidden');
+  
+  // Ordenar: más recientes primero
+  const sortedPedidos = [...pedidos].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+  tbody.innerHTML = sortedPedidos.map((pedido, index) => {
+    // Determinar índice original para borrado correcto
+    // (Esto es una simplificación, idealmente usaríamos IDs únicos)
+    const originalIndex = pedidos.indexOf(pedido);
+    
+    return `
+      <tr class="hover:bg-gray-50 transition-colors group">
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+          ${pedido.fecha}
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="flex items-center">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-pink-100 to-purple-100 flex items-center justify-center text-pink-600 font-bold text-xs mr-3">
+              ${(pedido.cliente || 'C').charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <div class="text-sm font-medium text-gray-900">${pedido.cliente || 'Anónimo'}</div>
+              <div class="text-xs text-gray-500">${pedido.cliente_telefono || ''}</div>
+            </div>
+          </div>
+        </td>
+        <td class="px-6 py-4">
+          <span class="text-sm text-gray-700">${pedido.producto || 'Varios'}</span>
+          ${pedido.detalles ? `<div class="text-xs text-gray-400 mt-1">${pedido.categoria}</div>` : ''}
+        </td>
+        <td class="px-6 py-4 text-center">
+          <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+            ${pedido.cantidad || 1}
+          </span>
+        </td>
+        <td class="px-6 py-4 text-right whitespace-nowrap">
+          <span class="text-sm font-bold text-gray-900">$${(pedido.precio || 0).toLocaleString('es-CO')}</span>
+        </td>
+        <td class="px-6 py-4 text-center whitespace-nowrap">
+          <button onclick="cambiarEstadoPedido(${originalIndex})" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStockClass(pedido.estado || 'pendiente')} hover:opacity-80 transition-opacity cursor-pointer">
+            ${(pedido.estado || 'pendiente').toUpperCase()}
+          </button>
+        </td>
+        <td class="px-6 py-4 text-right whitespace-nowrap text-sm font-medium">
+          <button onclick="eliminarPedido(${originalIndex})" class="text-red-400 hover:text-red-600 transition-colors p-2 hover:bg-red-50 rounded-lg">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
 }
 
-function configurarEventListenersPedidos() {
-  document.getElementById("categoria").addEventListener("change", function () {
-    const productos = productosPorCategoria[this.value] || [];
-    const select = document.getElementById("producto");
-    select.innerHTML = '<option value="">Selecciona un producto</option>' +
-      productos.map(p => `<option value="${p}">${p}</option>`).join('');
-    limpiarOpcionesEspecificas();
-  });
-
-  document.getElementById("producto").addEventListener("change", function () {
-    const producto = this.value;
-    const opcionesDiv = document.getElementById("opcionesEspecificas");
-    opcionesDiv.innerHTML = "";
-    opcionesDiv.classList.add("hidden");
-    document.getElementById("precio").value = "";
-
-    if (producto === "Yogurt") {
-      mostrarOpcionesYogurt();
-    }
-    else if (producto === "Queso") {
-      mostrarOpcionesQueso();
-    }
-    else if (producto === "Envueltos") {
-      mostrarOpcionesEnvueltos();
-    }
-    else if (producto === "Arepas") {
-      mostrarOpcionesArepas();
-    }
-    else if (producto === "Rellenas") {
-      setPrecioUnitario(PRECIOS.rellenas);
-    }
-    else if (producto === "Panela") {
-      setPrecioUnitario(PRECIOS.panela);
-    }
-    else if (producto === "Huevos") {
-      setPrecioUnitario(PRECIOS.huevos);
-    }
-    else if (producto === "Almuerzo") {
-      setPrecioUnitario(PRECIOS.almuerzo);
-    }
-    else if (producto === "Almojábanas") {
-      setPrecioUnitario(PRECIOS.almohabanas);
-    }
-    else if (producto === "Pulpa de avena") {
-      setPrecioUnitario(PRECIOS.pulpaAvena);
-    }
-  });
-
-  document.getElementById("cantidad").addEventListener("input", actualizarTotal);
+function getStockClass(estado) {
+  switch (estado) {
+    case 'completado': return 'bg-green-100 text-green-800';
+    case 'pendiente': return 'bg-yellow-100 text-yellow-800';
+    case 'cancelado': return 'bg-red-100 text-red-800';
+    default: return 'bg-gray-100 text-gray-800';
+  }
 }
 
-function mostrarOpcionesYogurt() {
-  const opcionesDiv = document.getElementById("opcionesEspecificas");
-  opcionesDiv.classList.remove("hidden");
-  opcionesDiv.innerHTML = `
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+// ------ MODAL LOGIC ------
+
+function abrirModalNuevoPedido() {
+  const modalHTML = `
+    <div id="modal-nuevo-pedido" class="fixed inset-0 z-50 flex items-center justify-center overflow-auto bg-black/50 backdrop-blur-sm p-4 animate-fadeIn">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl transform transition-all animate-scaleIn">
+        
+        <!-- Header -->
+        <div class="flex items-center justify-between p-6 border-b border-gray-100">
+          <h3 class="text-xl font-bold text-gray-800">Nuevo Pedido</h3>
+          <button onclick="cerrarModalNuevoPedido()" class="text-gray-400 hover:text-gray-600 w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="p-6 overflow-y-auto max-h-[70vh]">
+          <form id="form-pedido" onsubmit="event.preventDefault(); guardarNuevoPedido();" class="space-y-6">
+            
+            <!-- Cliente -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="space-y-2">
+                <label class="text-sm font-medium text-gray-700">Nombre Cliente *</label>
+                <input type="text" id="cliente-nombre" required class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-100 outline-none transition-all placeholder-gray-400" placeholder="Ej: Juan Pérez">
+              </div>
+              <div class="space-y-2">
+                <label class="text-sm font-medium text-gray-700">Teléfono</label>
+                <input type="tel" id="cliente-telefono" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-100 outline-none transition-all placeholder-gray-400" placeholder="Ej: 300 123 4567">
+              </div>
+            </div>
+
+            <!-- Detalles del Producto -->
+            <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 space-y-4">
+               <h4 class="text-sm font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-2">Detalles del Producto</h4>
+               
+               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <!-- Categoría -->
+                  <div class="space-y-2">
+                    <label class="text-sm font-medium text-gray-700">Categoría</label>
+                    <select id="categoria-select" onchange="cargarProductosSelect()" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-100 outline-none bg-white">
+                      <option value="">Seleccionar categoría...</option>
+                      ${Object.keys(productosPorCategoria).map(c => `<option value="${c}">${c}</option>`).join('')}
+                    </select>
+                  </div>
+
+                  <!-- Producto -->
+                  <div class="space-y-2">
+                    <label class="text-sm font-medium text-gray-700">Producto</label>
+                    <select id="producto-select" onchange="mostrarOpcionesProducto()" disabled class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-100 outline-none bg-white disabled:bg-gray-100 disabled:text-gray-400">
+                      <option value="">Primero selecciona categoría</option>
+                    </select>
+                  </div>
+               </div>
+
+               <!-- Opciones Dinámicas (Sabor, Tamaño, Tipo) -->
+               <div id="opciones-dinamicas" class="grid grid-cols-1 md:grid-cols-2 gap-4 hidden">
+                  <!-- Inyectado por JS -->
+               </div>
+
+               <!-- Precio y Cantidad -->
+               <div class="grid grid-cols-2 gap-4 pt-2">
+                  <div class="space-y-2">
+                    <label class="text-sm font-medium text-gray-700">Cantidad</label>
+                    <input type="number" id="cantidad" value="1" min="1" onchange="calculoFinal()" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-100 outline-none bg-white font-medium text-center">
+                  </div>
+                  <div class="space-y-2">
+                    <label class="text-sm font-medium text-gray-700">Precio Total</label>
+                    <div class="relative">
+                       <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                       <input type="number" id="precio-total" readonly class="w-full pl-8 pr-4 py-2 rounded-xl border border-gray-200 bg-gray-100 text-gray-800 font-bold outline-none cursor-default">
+                    </div>
+                  </div>
+               </div>
+            </div>
+
+            <!-- Fecha Entrega -->
+            <div class="space-y-2">
+               <label class="text-sm font-medium text-gray-700">Fecha del Pedido</label>
+               <input type="date" id="fecha-pedido" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-100 outline-none transition-all">
+            </div>
+
+          </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="p-6 border-t border-gray-100 bg-gray-50 rounded-b-2xl flex gap-3">
+          <button onclick="cerrarModalNuevoPedido()" class="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-100 transition-colors">
+            Cancelar
+          </button>
+          <button onclick="document.getElementById('form-pedido').requestSubmit()" class="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold shadow-lg shadow-pink-200 hover:shadow-xl hover:-translate-y-0.5 transition-all">
+            Guardar Pedido
+          </button>
+        </div>
+
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+  document.body.style.overflow = 'hidden';
+
+  // Set default date
+  document.getElementById('fecha-pedido').value = new Date().toISOString().split('T')[0];
+}
+
+function cerrarModalNuevoPedido() {
+  const modal = document.getElementById('modal-nuevo-pedido');
+  if (modal) {
+    modal.classList.add('opacity-0');
+    setTimeout(() => modal.remove(), 200);
+  }
+  document.body.style.overflow = '';
+}
+
+// ------ DYNAMIC FORM LOGIC ------
+
+function cargarProductosSelect() {
+  const cat = document.getElementById('categoria-select').value;
+  const prodSelect = document.getElementById('producto-select');
+  const opcionesDiv = document.getElementById('opciones-dinamicas');
+  
+  // Reset
+  prodSelect.innerHTML = '<option value="">Selecciona un producto...</option>';
+  prodSelect.disabled = true;
+  opcionesDiv.innerHTML = '';
+  opcionesDiv.classList.add('hidden');
+  document.getElementById('precio-total').value = '';
+
+  if (cat && productosPorCategoria[cat]) {
+    productosPorCategoria[cat].forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p;
+      opt.textContent = p;
+      prodSelect.appendChild(opt);
+    });
+    prodSelect.disabled = false;
+  }
+}
+
+function mostrarOpcionesProducto() {
+  const producto = document.getElementById('producto-select').value;
+  const container = document.getElementById('opciones-dinamicas');
+  container.innerHTML = '';
+  container.classList.add('hidden');
+  
+  let htmlInfo = '';
+
+  // Lógica específica según el producto para mostrar variantes
+  if (producto === 'Yogurt') {
+    container.classList.remove('hidden');
+    htmlInfo += `
       <div class="space-y-2">
-        <label class="block text-sm font-semibold text-gray-700">
-          <i class="fas fa-ruler text-pink-500 mr-1"></i> Tamaño
-        </label>
-        <select id="tamañoYogurt" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-pink-500 focus:ring-4 focus:ring-pink-100 transition-all bg-gray-50 hover:bg-white" onchange="actualizarPrecioYogurt()">
-          <option value="">Selecciona tamaño</option>
-          <option value="1L">🥛 1 Litro - $10,000</option>
-          <option value="2L">🥛 2 Litros - $18,000</option>
+        <label class="text-sm font-medium text-gray-700">Sabor</label>
+        <select id="var-sabor" class="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm">
+          ${yogurtSabores.map(s => `<option value="${s}">${s}</option>`).join('')}
         </select>
       </div>
       <div class="space-y-2">
-        <label class="block text-sm font-semibold text-gray-700">
-          <i class="fas fa-ice-cream text-pink-500 mr-1"></i> Sabor
-        </label>
-        <select id="saborYogurt" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-pink-500 focus:ring-4 focus:ring-pink-100 transition-all bg-gray-50 hover:bg-white">
-          <option value="">Selecciona sabor</option>
-          ${yogurtSabores.map(s => `<option value="${s}">🍓 ${s}</option>`).join('')}
+        <label class="text-sm font-medium text-gray-700">Tamaño</label>
+        <select id="var-tamano" onchange="calculoFinal()" class="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm">
+           <option value="1L">1 Litro</option>
+           <option value="2L">2 Litros</option>
         </select>
       </div>
-    </div>
-  `;
+    `;
+  } else if (producto === 'Queso') {
+    container.classList.remove('hidden');
+    htmlInfo += `
+      <div class="space-y-2 col-span-2">
+         <label class="text-sm font-medium text-gray-700">Tipo de Queso</label>
+         <select id="var-tipo" onchange="calculoFinal()" class="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm">
+            ${tiposQueso.map(t => `<option value="${t}">${t}</option>`).join('')}
+         </select>
+      </div>
+    `;
+  } else if (producto === 'Arepas') {
+     container.classList.remove('hidden');
+     htmlInfo += `
+      <div class="space-y-2 col-span-2">
+         <label class="text-sm font-medium text-gray-700">Tipo de Arepa</label>
+         <select id="var-tipo" onchange="calculoFinal()" class="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm">
+            ${tiposArepas.map(t => `<option value="${t}">${t}</option>`).join('')}
+         </select>
+      </div>
+    `;
+  } else if (producto === 'Envueltos') {
+     container.classList.remove('hidden');
+     htmlInfo += `
+      <div class="space-y-2 col-span-2">
+         <label class="text-sm font-medium text-gray-700">Tipo</label>
+         <select id="var-tipo" onchange="calculoFinal()" class="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm">
+            <option value="Normal">Normal</option>
+            <option value="Especial">Especial</option>
+         </select>
+      </div>
+    `;
+  }
+
+  container.innerHTML = htmlInfo;
+  calculoFinal(); // Calcular precio inmediatamente
 }
 
-function mostrarOpcionesQueso() {
-  const opcionesDiv = document.getElementById("opcionesEspecificas");
-  opcionesDiv.classList.remove("hidden");
-  opcionesDiv.innerHTML = `
-    <div class="space-y-2">
-      <label class="block text-sm font-semibold text-gray-700">
-        <i class="fas fa-cheese text-yellow-500 mr-1"></i> Tipo de Queso
-      </label>
-      <select id="tipoQueso" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-pink-500 focus:ring-4 focus:ring-pink-100 transition-all bg-gray-50 hover:bg-white" onchange="setPrecioUnitario(${PRECIOS.queso})">
-        <option value="">Selecciona tipo</option>
-        ${tiposQueso.map(t => `<option value="${t}">🧀 ${t}</option>`).join('')}
-      </select>
-    </div>
-  `;
+function calculoFinal() {
+  const producto = document.getElementById('producto-select').value;
+  const cant = parseInt(document.getElementById('cantidad').value) || 1;
+  const output = document.getElementById('precio-total');
+  
+  if (!producto) {
+    output.value = '';
+    return;
+  }
+
+  let precioUnitario = 0;
+
+  // Lógica de precios replicada de PRECIOS (config.js)
+  // Nota: Idealmente deberíamos importar PRECIOS, pero aquí asumimos acceso global o hardcodeamos para consistencia rapida
+  
+  if (PRECIOS) {
+      if (producto === 'Yogurt') {
+          const size = document.getElementById('var-tamano').value; // 1L or 2L
+          precioUnitario = PRECIOS.yogurt[size] || 0;
+      } else if (producto === 'Arepas') {
+          const tipo = document.getElementById('var-tipo').value;
+          precioUnitario = PRECIOS.arepas[tipo] || 0;
+      } else if (producto === 'Envueltos') {
+          const tipo = document.getElementById('var-tipo').value;
+          precioUnitario = PRECIOS.envueltos[tipo] || 0;
+      } else if (producto === 'Queso') {
+          // Asumimos precio único para queso según config.js, aunque tiposQueso existe para UI
+          precioUnitario = PRECIOS.queso || 0; 
+      } else if (producto === 'Almojábanas') {
+          precioUnitario = PRECIOS.almohabanas || 0;
+      } else if (producto === 'Rellenas') {
+          precioUnitario = PRECIOS.rellenas || 0;
+      } else if (producto === 'Panela') {
+          precioUnitario = PRECIOS.panela || 0;
+      } else if (producto === 'Huevos') {
+          precioUnitario = PRECIOS.huevos || 0;
+      } else if (producto === 'Almuerzo') {
+          precioUnitario = PRECIOS.almuerzo || 0;
+      } else if (producto === 'Pulpa de avena') {
+          precioUnitario = PRECIOS.pulpaAvena || 0;
+      }
+  }
+
+  output.value = precioUnitario * cant;
 }
 
-function mostrarOpcionesEnvueltos() {
-  const opcionesDiv = document.getElementById("opcionesEspecificas");
-  opcionesDiv.classList.remove("hidden");
-  opcionesDiv.innerHTML = `
-    <div class="space-y-2">
-      <label class="block text-sm font-semibold text-gray-700">
-        <i class="fas fa-gift text-green-500 mr-1"></i> Tipo de Envuelto
-      </label>
-      <select id="tipoEnvueltos" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-pink-500 focus:ring-4 focus:ring-pink-100 transition-all bg-gray-50 hover:bg-white" onchange="actualizarPrecioEnvueltos()">
-        <option value="">Selecciona tipo</option>
-        <option value="Normal">🌽 Normal - $2,000</option>
-        <option value="Especial">⭐ Especial - $3,500</option>
-      </select>
-    </div>
-  `;
-}
+function guardarNuevoPedido() {
+  const nombre = document.getElementById('cliente-nombre').value;
+  const telefono = document.getElementById('cliente-telefono').value;
+  const productoBase = document.getElementById('producto-select').value;
+  const categoria = document.getElementById('categoria-select').value;
+  const cantidad = parseInt(document.getElementById('cantidad').value);
+  const precio = parseFloat(document.getElementById('precio-total').value);
+  const fecha = document.getElementById('fecha-pedido').value;
 
-function mostrarOpcionesArepas() {
-  const opcionesDiv = document.getElementById("opcionesEspecificas");
-  opcionesDiv.classList.remove("hidden");
-  opcionesDiv.innerHTML = `
-    <div class="space-y-2">
-      <label class="block text-sm font-semibold text-gray-700">
-        <i class="fas fa-circle text-amber-500 mr-1"></i> Tipo de Arepa
-      </label>
-      <select id="tipoArepas" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-pink-500 focus:ring-4 focus:ring-pink-100 transition-all bg-gray-50 hover:bg-white" onchange="actualizarPrecioArepas()">
-        <option value="">Selecciona tipo</option>
-        <option value="Boyacense">🌾 Boyacense - $3,000</option>
-        <option value="de Chocolo">🌽 de Chocolo - $5,000</option>
-      </select>
-    </div>
-  `;
-}
+  if (!nombre || !productoBase || !precio) {
+    alert("Por favor completa los campos obligatorios.");
+    return;
+  }
 
-// Función para establecer precio unitario y calcular total
-function setPrecioUnitario(precioUnitario) {
-  const cantidad = parseInt(document.getElementById("cantidad").value) || 1;
-  const total = precioUnitario * cantidad;
-  document.getElementById("precio").value = total;
-}
+  // Construir nombre completo del producto con variantes
+  let productoFull = productoBase;
+  if (productoBase === 'Yogurt') {
+      productoFull += ` (${document.getElementById('var-tamano').value}, ${document.getElementById('var-sabor').value})`;
+  } else if (document.getElementById('var-tipo')) {
+      productoFull += ` (${document.getElementById('var-tipo').value})`;
+  }
 
-// Función para actualizar precio del yogurt
-function actualizarPrecioYogurt() {
-  const tamaño = document.getElementById("tamañoYogurt").value;
-  if (tamaño) {
-    const precio = PRECIOS.yogurt[tamaño];
-    setPrecioUnitario(precio);
-  }
-}
+  const nuevoPedido = {
+      cliente: nombre,
+      cliente_telefono: telefono,
+      producto: productoFull,
+      categoria: categoria,
+      cantidad: cantidad,
+      precio: precio,
+      fecha: fecha,
+      estado: 'pendiente'
+  };
 
-// Función para actualizar precio de envueltos
-function actualizarPrecioEnvueltos() {
-  const tipo = document.getElementById("tipoEnvueltos").value;
-  if (tipo) {
-    const precio = PRECIOS.envueltos[tipo];
-    setPrecioUnitario(precio);
-  }
-}
+  const pedidos = JSON.parse(localStorage.getItem('pedidos') || '[]');
+  pedidos.push(nuevoPedido);
+  localStorage.setItem('pedidos', JSON.stringify(pedidos));
 
-// Función para actualizar precio de arepas
-function actualizarPrecioArepas() {
-  const tipo = document.getElementById("tipoArepas").value;
-  if (tipo) {
-    const precio = PRECIOS.arepas[tipo];
-    setPrecioUnitario(precio);
+  // Trigger sync
+  if (window.matilacSync && typeof window.matilacSync.syncAfterPedido === 'function') {
+      window.matilacSync.syncAfterPedido();
+  } else {
+      console.log('Sync no disponible o no configurado aún');
   }
-}
 
-// Función para actualizar total cuando cambia la cantidad
-function actualizarTotal() {
-  const producto = document.getElementById("producto").value;
-  const cantidad = parseInt(document.getElementById("cantidad").value) || 1;
-
-  if (producto === "Yogurt") {
-    const tamaño = document.getElementById("tamañoYogurt").value;
-    if (tamaño) {
-      const precio = PRECIOS.yogurt[tamaño];
-      document.getElementById("precio").value = precio * cantidad;
-    }
-  } 
-  else if (producto === "Envueltos") {
-    const tipo = document.getElementById("tipoEnvueltos").value;
-    if (tipo) {
-      const precio = PRECIOS.envueltos[tipo];
-      document.getElementById("precio").value = precio * cantidad;
-    }
-  }
-  else if (producto === "Arepas") {
-    const tipo = document.getElementById("tipoArepas").value;
-    if (tipo) {
-      const precio = PRECIOS.arepas[tipo];
-      document.getElementById("precio").value = precio * cantidad;
-    }
-  }
-  else if (producto === "Queso") {
-    document.getElementById("precio").value = PRECIOS.queso * cantidad;
-  }
-  else if (producto === "Huevos") {
-    document.getElementById("precio").value = PRECIOS.huevos * cantidad;
-  } 
-  else if (producto === "Almuerzo") {
-    document.getElementById("precio").value = PRECIOS.almuerzo * cantidad;
-  } 
-  else if (producto === "Almojábanas") {
-    document.getElementById("precio").value = PRECIOS.almohabanas * cantidad;
-  } 
-  else if (producto === "Rellenas") {
-    document.getElementById("precio").value = PRECIOS.rellenas * cantidad;
-  }
-  else if (producto === "Panela") {
-    document.getElementById("precio").value = PRECIOS.panela * cantidad;
-  }
-  else if (producto === "Pulpa de avena") {
-    document.getElementById("precio").value = PRECIOS.pulpaAvena * cantidad;
+  cerrarModalNuevoPedido();
+  cargarDatosPedidos();
+  
+  // Mostrar feedback simple
+  // (Si existe función global de notificación, usarla, si no alert simple o nada)
+  if (typeof mostrarNotificacion === 'function') {
+      mostrarNotificacion("Pedido guardado correctamente", "success");
+  } else {
+      alert("Pedido guardado correctamente");
   }
 }
 
 function eliminarPedido(index) {
-  const pedidos = JSON.parse(localStorage.getItem("pedidos") || "[]");
-  pedidos.splice(index, 1);
-  localStorage.setItem("pedidos", JSON.stringify(pedidos));
-  actualizarTablas();
-  mostrarNotificacion("Pedido eliminado", "warning");
+    if (confirm("¿Estás seguro de eliminar este pedido?")) {
+        const pedidos = JSON.parse(localStorage.getItem('pedidos') || '[]');
+        pedidos.splice(index, 1);
+        localStorage.setItem('pedidos', JSON.stringify(pedidos));
+        cargarDatosPedidos();
+        
+        if (window.matilacSync && window.matilacSync.syncAfterPedido) {
+            window.matilacSync.syncAfterPedido();
+        }
+    }
 }
 
-function actualizarTablas() {
-  const pedidos = JSON.parse(localStorage.getItem("pedidos") || "[]");
-  const porFecha = pedidos.reduce((acc, p, index) => {
-    acc[p.fecha] = acc[p.fecha] || [];
-    acc[p.fecha].push({ ...p, index });
-    return acc;
-  }, {});
-
-  const fechas = Object.keys(porFecha).sort((a, b) => b.localeCompare(a));
-
-  // Actualizar contador
-  const contadorElement = document.getElementById("totalPedidosCount");
-  if (contadorElement) {
-    contadorElement.textContent = `${pedidos.length} pedido${pedidos.length !== 1 ? 's' : ''}`;
-  }
-
-  // Vista de escritorio
-  let htmlDesktop = "";
-  // Vista móvil
-  let htmlMobile = "";
-  
-  fechas.forEach(fecha => {
-    // Fila de fecha para desktop
-    htmlDesktop += `
-      <tr class="bg-gradient-to-r from-pink-50 to-rose-50">
-        <td colspan="7" class="px-4 lg:px-6 py-3">
-          <div class="flex items-center gap-2 font-semibold text-pink-700">
-            <i class="fas fa-calendar-alt"></i>
-            <span>${formatearFecha(fecha)}</span>
-            <span class="text-xs bg-pink-200 text-pink-800 px-2 py-0.5 rounded-full ml-2">${porFecha[fecha].length} pedido${porFecha[fecha].length > 1 ? 's' : ''}</span>
-          </div>
-        </td>
-      </tr>
-    `;
+function cambiarEstadoPedido(index) {
+    const pedidos = JSON.parse(localStorage.getItem('pedidos') || '[]');
+    const estados = ['pendiente', 'completado', 'cancelado'];
+    const actual = pedidos[index].estado || 'pendiente';
     
-    // Separador de fecha para móvil
-    htmlMobile += `
-      <div class="bg-gradient-to-r from-pink-50 to-rose-50 px-4 py-3 border-b border-pink-100">
-        <div class="flex items-center gap-2 font-semibold text-pink-700">
-          <i class="fas fa-calendar-alt"></i>
-          <span>${formatearFecha(fecha)}</span>
-          <span class="text-xs bg-pink-200 text-pink-800 px-2 py-0.5 rounded-full">${porFecha[fecha].length}</span>
-        </div>
-      </div>
-    `;
+    let nextIdx = estados.indexOf(actual) + 1;
+    if (nextIdx >= estados.length) nextIdx = 0;
     
-    porFecha[fecha].forEach(p => {
-      const categoriaColor = p.categoria === 'Lácteos' ? 'blue' : 
-                            p.categoria === 'Panadería' ? 'amber' : 'gray';
-      
-      // Fila de pedido para desktop
-      htmlDesktop += `
-        <tr class="hover:bg-gray-50 transition-colors group">
-          <td class="px-4 lg:px-6 py-4 text-gray-400 text-sm"></td>
-          <td class="px-4 lg:px-6 py-4">
-            <div class="flex items-center gap-2">
-              <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 text-sm font-medium">
-                ${p.cliente.charAt(0).toUpperCase()}
-              </div>
-              <span class="font-medium">${p.cliente}</span>
-            </div>
-          </td>
-          <td class="px-4 lg:px-6 py-4">
-            <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-${categoriaColor}-100 text-${categoriaColor}-700">
-              ${p.categoria}
-            </span>
-          </td>
-          <td class="px-4 lg:px-6 py-4 text-gray-700">${p.producto}</td>
-          <td class="px-4 lg:px-6 py-4 text-center">
-            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-pink-100 text-pink-700 font-bold text-sm">
-              ${p.cantidad}
-            </span>
-          </td>
-          <td class="px-4 lg:px-6 py-4 text-right">
-            <span class="font-bold text-green-600">$${p.precio.toLocaleString()}</span>
-          </td>
-          <td class="px-4 lg:px-6 py-4 text-center">
-            <button onclick="eliminarPedido(${p.index})" class="w-9 h-9 bg-red-50 hover:bg-red-100 text-red-500 hover:text-red-700 rounded-lg transition-all opacity-0 group-hover:opacity-100 focus:opacity-100">
-              <i class="fas fa-trash-alt text-sm"></i>
-            </button>
-          </td>
-        </tr>
-      `;
-      
-      // Tarjeta de pedido para móvil
-      htmlMobile += `
-        <div class="px-4 py-4 border-b border-gray-100">
-          <div class="flex items-start justify-between mb-3">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 font-semibold">
-                ${p.cliente.charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <p class="font-semibold text-gray-800">${p.cliente}</p>
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-${categoriaColor}-100 text-${categoriaColor}-700">
-                  ${p.categoria}
-                </span>
-              </div>
-            </div>
-            <button onclick="eliminarPedido(${p.index})" class="w-8 h-8 bg-red-50 text-red-500 rounded-lg flex items-center justify-center">
-              <i class="fas fa-trash-alt text-xs"></i>
-            </button>
-          </div>
-          <div class="bg-gray-50 rounded-lg p-3 space-y-2">
-            <div class="flex justify-between items-center">
-              <span class="text-gray-500 text-sm">Producto</span>
-              <span class="font-medium text-sm text-gray-800">${p.producto}</span>
-            </div>
-            <div class="flex justify-between items-center">
-              <span class="text-gray-500 text-sm">Cantidad</span>
-              <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-pink-100 text-pink-700 font-bold text-xs">
-                ${p.cantidad}
-              </span>
-            </div>
-            <div class="flex justify-between items-center pt-2 border-t border-gray-200">
-              <span class="text-gray-500 text-sm font-medium">Total</span>
-              <span class="font-bold text-green-600">$${p.precio.toLocaleString()}</span>
-            </div>
-          </div>
-        </div>
-      `;
+    pedidos[index].estado = estados[nextIdx];
+    localStorage.setItem('pedidos', JSON.stringify(pedidos));
+    cargarDatosPedidos();
+
+    if (window.matilacSync && window.matilacSync.syncAfterPedido) {
+        window.matilacSync.syncAfterPedido();
+    }
+}
+
+function filtrarPedidos(query) {
+    const term = query.toLowerCase();
+    const rows = document.querySelectorAll('#lista-pedidos tr');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(term) ? '' : 'none';
     });
-  });
-
-  const emptyState = `
-    <tr>
-      <td colspan="7" class="text-center py-16">
-        <div class="flex flex-col items-center gap-4">
-          <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center">
-            <i class="fas fa-shopping-cart text-3xl text-gray-300"></i>
-          </div>
-          <div>
-            <p class="text-gray-500 font-medium">No hay pedidos registrados</p>
-            <p class="text-gray-400 text-sm">Comienza agregando tu primer pedido</p>
-          </div>
-        </div>
-      </td>
-    </tr>
-  `;
-  
-  const emptyStateMobile = `
-    <div class="text-center py-12 px-4">
-      <div class="flex flex-col items-center gap-4">
-        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
-          <i class="fas fa-shopping-cart text-2xl text-gray-300"></i>
-        </div>
-        <div>
-          <p class="text-gray-500 font-medium">No hay pedidos registrados</p>
-          <p class="text-gray-400 text-sm">Comienza agregando tu primer pedido</p>
-        </div>
-      </div>
-    </div>
-  `;
-
-  document.getElementById("tablaPedidos").innerHTML = htmlDesktop || emptyState;
-  
-  const tablaMobile = document.getElementById("tablaPedidosMobile");
-  if (tablaMobile) {
-    tablaMobile.innerHTML = htmlMobile || emptyStateMobile;
-  }
-}
-
-function limpiarCampos() {
-  document.getElementById("categoria").value = "";
-  document.getElementById("producto").innerHTML = '<option value="">Selecciona un producto</option>';
-  document.getElementById("cantidad").value = 1;
-  document.getElementById("precio").value = "";
-  document.getElementById("fecha").value = "";
-  document.getElementById("cliente").value = "";
-  limpiarOpcionesEspecificas();
-}
-
-function limpiarOpcionesEspecificas() {
-  const opcionesDiv = document.getElementById("opcionesEspecificas");
-  if (opcionesDiv) {
-    opcionesDiv.innerHTML = "";
-    opcionesDiv.classList.add("hidden");
-  }
 }

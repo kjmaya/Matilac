@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Matilac - Iniciar Sesión</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    
+    .login-card {
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .input-field {
+      transition: all 0.3s ease;
+    }
+    
+    .input-field:focus {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-login {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      transition: all 0.3s ease;
+    }
+    
+    .btn-login:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+  
+  <!-- Partículas de fondo (opcional) -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute -top-40 -right-40 w-80 h-80 bg-white opacity-5 rounded-full"></div>
+    <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-white opacity-5 rounded-full"></div>
+  </div>
+
+  <!-- Contenedor principal de login -->
+  <div class="login-card rounded-2xl p-8 w-full max-w-md relative z-10">
+    
+    <!-- Logo y título -->
+    <div class="text-center mb-8">
+      <div class="w-20 h-20 bg-gradient-to-br from-pink-500 to-rose-600 rounded-2xl flex items-center justify-center text-white font-bold text-2xl mx-auto mb-4 shadow-lg">
+        M
+      </div>
+      <h1 class="text-3xl font-bold text-gray-800 mb-2">Matilac</h1>
+      <p class="text-gray-600">Sistema de Gestión</p>
+    </div>
+
+    <!-- Formulario de login -->
+    <form id="loginForm" class="space-y-6">
+      
+      <!-- Campo usuario -->
+      <div>
+        <label for="usuario" class="block text-sm font-medium text-gray-700 mb-2">
+          <i class="fas fa-user mr-2"></i>Usuario
+        </label>
+        <input 
+          type="text" 
+          id="usuario" 
+          name="usuario" 
+          required
+          class="input-field w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+          placeholder="Ingresa tu usuario"
+          autocomplete="username"
+        >
+      </div>
+
+      <!-- Campo contraseña -->
+      <div>
+        <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+          <i class="fas fa-lock mr-2"></i>Contraseña
+        </label>
+        <div class="relative">
+          <input 
+            type="password" 
+            id="password" 
+            name="password" 
+            required
+            class="input-field w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none pr-10"
+            placeholder="Ingresa tu contraseña"
+            autocomplete="current-password"
+          >
+          <button 
+            type="button" 
+            id="togglePassword"
+            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+          >
+            <i class="fas fa-eye" id="eyeIcon"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mensaje de error -->
+      <div id="errorMessage" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <i class="fas fa-exclamation-circle mr-2"></i>
+        <span id="errorText">Error en el login</span>
+      </div>
+
+      <!-- Botón de login -->
+      <button 
+        type="submit" 
+        id="loginButton"
+        class="btn-login w-full text-white py-3 px-4 rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+      >
+        <span id="loginButtonText">
+          <i class="fas fa-sign-in-alt mr-2"></i>Iniciar Sesión
+        </span>
+        <span id="loginButtonLoader" class="hidden">
+          <i class="fas fa-spinner fa-spin mr-2"></i>Iniciando...
+        </span>
+      </button>
+
+    </form>
+
+    <!-- Información adicional -->
+    <div class="mt-8 text-center">
+      <p class="text-sm text-gray-500">
+        ¿Necesitas ayuda? Contacta al administrador
+      </p>
+      
+      <!-- Credenciales de prueba (remover en producción) -->
+      <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm">
+        <p class="text-blue-700 font-medium mb-1">Credenciales de prueba:</p>
+        <p class="text-blue-600">Usuario: <code class="bg-blue-100 px-1 rounded">admin</code></p>
+        <p class="text-blue-600">Contraseña: <code class="bg-blue-100 px-1 rounded">admin123</code></p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/auth-client.js"></script>
+  <script>
+    // Elementos del DOM
+    const loginForm = document.getElementById('loginForm');
+    const usuarioInput = document.getElementById('usuario');
+    const passwordInput = document.getElementById('password');
+    const togglePasswordBtn = document.getElementById('togglePassword');
+    const eyeIcon = document.getElementById('eyeIcon');
+    const errorMessage = document.getElementById('errorMessage');
+    const errorText = document.getElementById('errorText');
+    const loginButton = document.getElementById('loginButton');
+    const loginButtonText = document.getElementById('loginButtonText');
+    const loginButtonLoader = document.getElementById('loginButtonLoader');
+
+    // Toggle mostrar/ocultar contraseña
+    togglePasswordBtn.addEventListener('click', () => {
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+      eyeIcon.className = type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+    });
+
+    // Función para mostrar error
+    function showError(message) {
+      errorText.textContent = message;
+      errorMessage.classList.remove('hidden');
+      
+      // Auto-ocultar después de 5 segundos
+      setTimeout(() => {
+        errorMessage.classList.add('hidden');
+      }, 5000);
+    }
+
+    // Función para ocultar error
+    function hideError() {
+      errorMessage.classList.add('hidden');
+    }
+
+    // Función para mostrar/ocultar loading
+    function setLoading(loading) {
+      if (loading) {
+        loginButtonText.classList.add('hidden');
+        loginButtonLoader.classList.remove('hidden');
+        loginButton.disabled = true;
+      } else {
+        loginButtonText.classList.remove('hidden');
+        loginButtonLoader.classList.add('hidden');
+        loginButton.disabled = false;
+      }
+    }
+
+    // Manejo del formulario de login
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const usuario = usuarioInput.value.trim();
+      const password = passwordInput.value;
+
+      // Validaciones básicas
+      if (!usuario || !password) {
+        showError('Por favor completa todos los campos');
+        return;
+      }
+
+      hideError();
+      setLoading(true);
+
+      try {
+        // Intentar login
+        const result = await authClient.login(usuario, password);
+        
+        if (result.success) {
+          // Login exitoso, redirigir a la aplicación principal
+          window.location.href = 'index.html';
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        showError(error.message || 'Error al iniciar sesión. Verifica tus credenciales.');
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    // Auto-focus en el campo usuario
+    usuarioInput.focus();
+
+    // Verificar si ya está logueado
+    if (authClient.isAuthenticated) {
+      window.location.href = 'index.html';
+    }
+  </script>
+
+</body>
+</html>

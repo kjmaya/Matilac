@@ -1,4 +1,4 @@
-// api/config.js - Función serverless corregida para Vercel
+// api/config.js - Configuración de la base de datos Neon PostgreSQL
 export default function handler(req, res) {
   // Agregar headers CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -18,39 +18,23 @@ export default function handler(req, res) {
 
   try {
     // Debug: Log de variables de entorno (quitar en producción)
-    console.log('GITHUB_TOKEN exists:', !!process.env.GITHUB_TOKEN);
-    console.log('GITHUB_OWNER:', process.env.GITHUB_OWNER);
-    console.log('GITHUB_REPO:', process.env.GITHUB_REPO);
+    console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL);
 
     // Verificar que las variables de entorno existan
-    if (!process.env.GITHUB_TOKEN) {
+    if (!process.env.DATABASE_URL) {
       return res.status(500).json({ 
-        error: 'GITHUB_TOKEN not configured',
-        debug: 'Check environment variables in Vercel'
+        error: 'DATABASE_URL not configured',
+        debug: 'Check environment variables in Vercel. Should contain Neon PostgreSQL connection string'
       });
     }
 
-    if (!process.env.GITHUB_OWNER) {
-      return res.status(500).json({ 
-        error: 'GITHUB_OWNER not configured',
-        debug: 'Should be: kjmaya'
-      });
-    }
-
-    if (!process.env.GITHUB_REPO) {
-      return res.status(500).json({ 
-        error: 'GITHUB_REPO not configured',
-        debug: 'Should be: matilac-data'
-      });
-    }
-
-    // Devolver configuración
+    // Devolver configuración (sin exponer la URL completa por seguridad)
     res.status(200).json({
-      owner: process.env.GITHUB_OWNER,
-      repo: process.env.GITHUB_REPO,
-      token: process.env.GITHUB_TOKEN,
-      configured: true,
-      timestamp: new Date().toISOString()
+      database_configured: true,
+      database_type: 'postgresql',
+      provider: 'neon',
+      timestamp: new Date().toISOString(),
+      status: 'ready'
     });
 
   } catch (error) {
